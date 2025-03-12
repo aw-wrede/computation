@@ -1,0 +1,23 @@
+# Environment
+.idea/
+.vscode/
+
+# Mac
+.DS_Store
+
+# Python
+.venv
+__pycache__
+*.manifest
+*.spec
+.python-version
+
+# Distribution
+.Python
+build/
+dist/
+target/
+
+# Libraries
+lib/
+lib64/
