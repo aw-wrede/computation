@@ -273,7 +273,7 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
   return 1;
 }
 
-marray* matrix_dot(const marray *a, const marray *b) {
+marray* matrix_dot(const marray* a, const marray* b) {
 
   // alloc matrix to store result
   marray* m = matrix_zeroes(a->rows, a->cols);
