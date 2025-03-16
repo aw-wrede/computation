@@ -41,6 +41,17 @@ Output:
 marray* matrix_zeroes(int rows, int cols);
 
 /*
+Creates a copy of the matrix
+
+Input:
+  marray* m: pointer to the matrix to copy
+
+Output:
+  marray*: pointer to the copy of the input matrix
+*/
+marray* matrix_copy(const marray* m);
+
+/*
 Adds the value b to the matrix a
 
 Input:

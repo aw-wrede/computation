@@ -54,6 +54,19 @@ marray* matrix_zeroes(const int rows, const int cols) {
   return m;
 }
 
+marray* matrix_copy(const marray* m) {
+
+  marray* copy = matrix_zeroes(m->rows, m->cols);
+
+  if(copy == NULL) {
+    return NULL;
+  }
+
+  memcpy(copy->data, m->data, m->rows * m->cols * sizeof(double));
+
+  return copy;
+}
+
 void matrix_addi_val(const marray* a, const double b) {
   for(int i = 0; i < a->rows * a->cols; i++) {
     a->data[i] = a->data[i] + b;
