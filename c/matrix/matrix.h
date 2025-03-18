@@ -41,6 +41,17 @@ Output:
 marray* matrix_zeroes(int rows, int cols);
 
 /*
+Creates a new matrix with one on diagonal elements and zero elsewhere
+
+Input:
+  int n: dimensions for quadratic matrix
+
+Output:
+  marray*: pointer to the created identity matrix
+*/
+marray* matrix_identity(const int n);
+
+/*
 Creates a copy of the matrix
 
 Input:

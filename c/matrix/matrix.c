@@ -54,6 +54,20 @@ marray* matrix_zeroes(const int rows, const int cols) {
   return m;
 }
 
+marray* matrix_identity(const int n) {
+  marray* m = matrix_zeroes(n, n);
+
+  if(m == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < n; i++) {
+    m->data[i*n + i] = 1.0;
+  }
+
+  return m;
+}
+
 marray* matrix_copy(const marray* m) {
 
   marray* copy = matrix_zeroes(m->rows, m->cols);
