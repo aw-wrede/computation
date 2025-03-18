@@ -10,7 +10,7 @@ typedef struct {
 Frees the memory of the given matrix
 
 Input:
-  marray* m: a pointer to a matrix
+  marray* m: pointer to a matrix
 
 Output:
   None
@@ -21,7 +21,7 @@ void matrix_free(marray* m);
 Prints the given matrix to console
 
 Input:
-  marray* m: a pointer to a matrix
+  marray* m: pointer to a matrix
 
 Output:
   None, but the matrix is displayed in the console
@@ -36,7 +36,7 @@ Input:
   int cols: amount of columns the matrix will have
 
 Output:
-  marray*: a pointer to the created matrix with given dimensions and value zero in each element
+  marray*: pointer to the created matrix with given dimensions and value zero in each element
 */
 marray* matrix_zeroes(int rows, int cols);
 
@@ -71,7 +71,7 @@ Input:
   double b: value that is added to the matrix a
 
 Output:
-  marray*: the result of the addition of matrix a and value b
+  marray*: pointer to the result of the addition of matrix a and value b
 */
 marray* matrix_add_val(const marray* a, double b);
 
@@ -95,7 +95,7 @@ Input:
   marray* b: matrix that is added to the matrix a
 
 Output:
-  marray*: the result of the matrix addition of a and b
+  marray*: pointer to the result of the matrix addition of a and b
 */
 marray* matrix_add(const marray* a, const marray* b);
 
@@ -119,7 +119,7 @@ Input:
   marray* b: matrix that is subtracted from the matrix a
 
 Output:
-  marray*: the result of the matrix addition of a and b
+  marray*: pointer to the result of the matrix addition of a and b
 */
 marray* matrix_sub(const marray* a, const marray* b);
 
@@ -131,7 +131,7 @@ Input:
   marray* b: a pointer to a matrix
 
 Output:
-  marray*: the result of the matrix dot product a*b
+  marray*: pointer to the result of the matrix dot product a*b
 */
 marray* matrix_dot(const marray* a, const marray* b);
 
