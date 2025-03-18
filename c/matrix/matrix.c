@@ -22,7 +22,7 @@ void matrix_print(const marray* m) {
 
   for(int i = 0; i < m->rows; i++) {
     for(int j = 0; j < m->cols; j++) {
-      printf("%lf ", m->data[i * m->cols + j]);
+      printf("%lf\t", m->data[i * m->cols + j]);
     }
     printf("\n");
   }
