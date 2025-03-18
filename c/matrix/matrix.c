@@ -81,6 +81,22 @@ marray* matrix_copy(const marray* m) {
   return copy;
 }
 
+marray* matrix_transposed(const marray* m) {
+  marray* t = matrix_zeroes(m->cols, m->rows);
+
+  if(t == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < t->rows; i++) {
+    for (int j = 0; j < t->cols; j++) {
+      t->data[i * t->cols + j] = m->data[j * m->cols + i];
+    }
+  }
+
+  return t;
+}
+
 void matrix_addi_val(const marray* a, const double b) {
   for(int i = 0; i < a->rows * a->cols; i++) {
     a->data[i] = a->data[i] + b;

@@ -63,6 +63,17 @@ Output:
 marray* matrix_copy(const marray* m);
 
 /*
+Creates the transposed of the given matrix
+
+Input:
+  marray* m: matrix from which the transposed is to be created.
+
+Output:
+  marray*: pointer to the transposed
+*/
+marray* matrix_transposed(const marray* m);
+
+/*
 Adds the value b to the matrix a
 
 Input:
