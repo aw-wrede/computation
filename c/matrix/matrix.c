@@ -8,10 +8,6 @@ void matrix_free(marray* m) {
     return;
   }
 
-  if(m->data != NULL) {
-    free(m->data);
-  }
-
   free(m);
 }
 
@@ -30,8 +26,9 @@ void matrix_print(const marray* m) {
 
 marray* matrix_zeroes(const int rows, const int cols) {
 
-  // alloc mem for structure
-  marray* m = malloc(sizeof(marray));
+  // alloc mem for structure and data
+  // calloc sets the entire memory area to 0
+  marray* m = calloc(sizeof(marray) + rows * cols * sizeof(double), 1);
 
   // return null if not enough memory is free
   if(m == NULL) {
@@ -42,14 +39,8 @@ marray* matrix_zeroes(const int rows, const int cols) {
   m->rows = rows;
   m->cols = cols;
 
-  // alloc memory for array
-  m->data = (double*) calloc(m->rows * m->cols, sizeof(double));
-
-  // return null if not enough memory is free
-  if(m->data == NULL) {
-    free(m);
-    return NULL;
-  }
+  // set data pointer to memory after structure
+  m->data = (double*) (m+1);
 
   return m;
 }
