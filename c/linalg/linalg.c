@@ -2,6 +2,22 @@
 #include <stdio.h>
 #include <string.h>
 
+void linalg_print_system(const marray* a, const marray* b) {
+
+  if (a == NULL || b == NULL) {
+    return;
+  }
+
+  for(int i = 0; i < a->rows; i++) {
+    for(int j = 0; j < a->cols; j++) {
+      printf("%lf\t", a->data[i * a->cols + j]);
+    }
+
+    printf(" |\t%lf\n", b->data[i]);
+  }
+
+}
+
 int find_largest_pivot_element(const marray* m, const int col) {
 
   int pivot_index = 0;
