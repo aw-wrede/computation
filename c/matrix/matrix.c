@@ -16,22 +16,22 @@ void matrix_print(const marray* m) {
     return;
   }
 
-  for(int i = 0; i < m->rows; i++) {
-    for(int j = 0; j < m->cols; j++) {
+  for (int i = 0; i < m->rows; i++) {
+    for (int j = 0; j < m->cols; j++) {
       printf("%lf\t", m->data[i * m->cols + j]);
     }
+
     printf("\n");
   }
 }
 
 marray* matrix_zeroes(const int rows, const int cols) {
-
   // alloc mem for structure and data
   // calloc sets the entire memory area to 0
   marray* m = calloc(sizeof(marray) + rows * cols * sizeof(double), 1);
 
   // return null if not enough memory is free
-  if(m == NULL) {
+  if (m == NULL) {
     return NULL;
   }
 
@@ -48,7 +48,7 @@ marray* matrix_zeroes(const int rows, const int cols) {
 marray* matrix_identity(const int n) {
   marray* m = matrix_zeroes(n, n);
 
-  if(m == NULL) {
+  if (m == NULL) {
     return NULL;
   }
 
@@ -60,10 +60,9 @@ marray* matrix_identity(const int n) {
 }
 
 marray* matrix_copy(const marray* m) {
-
   marray* copy = matrix_zeroes(m->rows, m->cols);
 
-  if(copy == NULL) {
+  if (copy == NULL) {
     return NULL;
   }
 
@@ -75,13 +74,15 @@ marray* matrix_copy(const marray* m) {
 marray* matrix_transposed(const marray* m) {
   marray* t = matrix_zeroes(m->cols, m->rows);
 
-  if(t == NULL) {
+  if (t == NULL) {
     return NULL;
   }
 
   for (int i = 0; i < t->rows; i++) {
+    const int row = i * t->cols;
+
     for (int j = 0; j < t->cols; j++) {
-      t->data[i * t->cols + j] = m->data[j * m->cols + i];
+      t->data[row + j] = m->data[j * m->cols + i];
     }
   }
 
@@ -89,7 +90,9 @@ marray* matrix_transposed(const marray* m) {
 }
 
 void matrix_addi_val(const marray* a, const double b) {
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  const int elems = a->rows * a->cols;
+
+  for (int i = 0; i < elems; i++) {
     a->data[i] = a->data[i] + b;
   }
 }
@@ -97,7 +100,7 @@ void matrix_addi_val(const marray* a, const double b) {
 marray* matrix_add_val(const marray* a, const double b) {
   marray* result = matrix_zeroes(a->rows, a->cols);
 
-  if(result == NULL) {
+  if (result == NULL) {
     return NULL;
   }
 
@@ -111,25 +114,33 @@ marray* matrix_add_val(const marray* a, const double b) {
 }
 
 void matrix_addi(const marray* a, const marray* b) {
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  // Check dimensions
+  if (a->rows != b->rows || a->cols != b->cols) {
+    return;
+  }
+
+  const int elems = a->rows * a->cols;
+
+  for (int i = 0; i < elems; i++) {
     a->data[i] = a->data[i] + b->data[i];
   }
 }
 
 marray* matrix_add(const marray* a, const marray* b) {
-
   // Check dimensions
-  if(a->rows != b->rows || a->cols != b->cols) {
+  if (a->rows != b->rows || a->cols != b->cols) {
     return NULL;
   }
 
   marray* m = matrix_zeroes(a->rows, a->cols);
 
-  if(m == NULL) {
+  if (m == NULL) {
     return NULL;
   }
 
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  const int elems = a->rows * a->cols;
+
+  for (int i = 0; i < elems; i++) {
     m->data[i] = a->data[i] + b->data[i];
   }
 
@@ -137,29 +148,32 @@ marray* matrix_add(const marray* a, const marray* b) {
 }
 
 void matrix_subi(const marray* a, const marray* b) {
-
   // Check dimensions
-  if(a->rows != b->rows || a->cols != b->cols) {
+  if (a->rows != b->rows || a->cols != b->cols) {
     return;
   }
 
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  const int elems = a->rows * a->cols;
+
+  for (int i = 0; i < elems; i++) {
     a->data[i] = a->data[i] - b->data[i];
   }
 }
 
 marray* matrix_sub(const marray* a, const marray* b) {
-
-  if(a->rows != b->rows || a->cols != b->cols) {
+  if (a->rows != b->rows || a->cols != b->cols) {
     return NULL;
   }
 
   marray* m = matrix_zeroes(a->rows, a->cols);
-  if(m == NULL) {
+
+  if (m == NULL) {
     return NULL;
   }
 
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  const int elems = a->rows * a->cols;
+
+  for (int i = 0; i < elems; i++) {
     m->data[i] = a->data[i] - b->data[i];
   }
 
@@ -167,22 +181,21 @@ marray* matrix_sub(const marray* a, const marray* b) {
 }
 
 void matrix_muli_val(const marray* a, const double b) {
-
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  for (int i = 0; i < a->rows * a->cols; i++) {
     a->data[i] = a->data[i] * b;
   }
-
 }
 
 marray* matrix_mul_val(const marray* a, const double b) {
-
   marray* result = matrix_zeroes(a->rows, a->cols);
 
-  if(result == NULL) {
+  if (result == NULL) {
     return NULL;
   }
 
-  for(int i = 0; i < a->rows * a->cols; i++) {
+  const int elems = a->rows * a->cols;
+
+  for (int i = 0; i < elems; i++) {
     a->data[i] = a->data[i] * b;
   }
 
@@ -191,11 +204,14 @@ marray* matrix_mul_val(const marray* a, const double b) {
 }
 
 void dot_general(const marray* result, const marray* a, const marray* b) {
-  for(int i = 0; i < a->rows; i++) {
-    for(int j = 0; j < b->cols; j++) {
+  for (int i = 0; i < a->rows; i++) {
+    const int row = i * a->cols;
+
+    for (int j = 0; j < b->cols; j++) {
       double val = 0;
-      for(int k = 0; k < a->cols; k++) {
-        val += a->data[i * a->cols + k] * b->data[k * b->cols + j];
+
+      for (int k = 0; k < a->cols; k++) {
+        val += a->data[row + k] * b->data[k * b->cols + j];
       }
 
       result->data[i * result->cols + j] = val;
@@ -205,7 +221,8 @@ void dot_general(const marray* result, const marray* a, const marray* b) {
 
 void matrix_get_partition(marray** dest, const marray* m, const int row_start, const int row_end, const int col_start, const int col_end) {
   *dest = matrix_zeroes(row_end - row_start, col_end - col_start);
-  for(int i = 0; i < row_end - row_start; i++) {
+
+  for (int i = 0; i < row_end - row_start; i++) {
     // dest: i-th row of p
     // src: i + row_start of matrix a, skip rows behind start row
     memcpy( &(*dest)->data[i * (*dest)->cols], &m->data[(i + row_start) * m->cols + col_start], sizeof(double) * (*dest)->cols );
@@ -218,7 +235,7 @@ int get_partitions(const marray* a, marray** a11, marray** a12, marray** a21, ma
   matrix_get_partition(a21, a, a->rows/2, a->rows,   0,         a->cols/2);
   matrix_get_partition(a22, a, a->rows/2, a->rows,   a->cols/2, a->cols);
 
-  if(*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
+  if (*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
     return 0;
   }
 
@@ -226,9 +243,12 @@ int get_partitions(const marray* a, marray** a11, marray** a12, marray** a21, ma
 }
 
 void apply_partition(const marray* dest, const marray* m, const int row, const int col) {
-  for(int i = 0; i < m->rows; i++) {
-    for(int j = 0; j < m->cols; j++) {
-      dest->data[(i + row) * dest->cols + j + col] = m->data[i * m->cols + j];
+  for (int i = 0; i < m->rows; i++) {
+    const int dest_offset = (i + row) * dest->cols + col;
+    const int src_row = i * m->cols;
+
+    for (int j = 0; j < m->cols; j++) {
+      dest->data[dest_offset + j] = m->data[src_row + j];
     }
   }
 }
@@ -242,15 +262,18 @@ void from_partitions(const marray* dest, const marray* a11, const marray* a12, c
   apply_partition(dest, a22, n/2, n/2);
 }
 
-int dot_quadratic(marray* result, const marray* a, const marray* b) {
+int dot_quadratic(const marray* result, const marray* a, const marray* b) {
+  //TODO Think about better solution to free matrices if errors occur
+
   marray *a11 = NULL, *a12 = NULL, *a21 = NULL, *a22 = NULL;
   marray *b11 = NULL, *b12 = NULL, *b21 = NULL, *b22 = NULL;
 
   // check if partitions created successfully
-  if(!get_partitions(a, &a11, &a12, &a21, &a22) || !get_partitions(b, &b11, &b12, &b21, &b22)) {
+  if (!get_partitions(a, &a11, &a12, &a21, &a22) || !get_partitions(b, &b11, &b12, &b21, &b22)) {
     return 0;
   }
 
+  // intermediate steps
   marray *m1_a = matrix_add(a11, a22), *m1_b = matrix_add(b11, b22);
   marray *m2_a = matrix_add(a21, a22);
   marray *m3_b = matrix_sub(b12, b22);
@@ -258,6 +281,32 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
   marray *m5_a = matrix_add(a11, a12);
   marray *m6_a = matrix_sub(a21, a11), *m6_b = matrix_add(b11, b12);
   marray *m7_a = matrix_sub(a12, a22), *m7_b = matrix_add(b21, b22);
+
+  // check for successful matrix operations
+  if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL || m6_b == NULL || m7_a == NULL || m7_b == NULL) {
+    matrix_free(a11);
+    matrix_free(a12);
+    matrix_free(a21);
+    matrix_free(a22);
+
+    matrix_free(b11);
+    matrix_free(b12);
+    matrix_free(b21);
+    matrix_free(b22);
+
+    matrix_free(m1_a);
+    matrix_free(m1_b);
+    matrix_free(m2_a);
+    matrix_free(m3_b);
+    matrix_free(m4_b);
+    matrix_free(m5_a);
+    matrix_free(m6_a);
+    matrix_free(m6_b);
+    matrix_free(m7_a);
+    matrix_free(m7_b);
+
+    return 0;
+  }
 
   marray *m1 = matrix_dot(m1_a, m1_b);
   marray *m2 = matrix_dot(m2_a, b11);
@@ -267,6 +316,7 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
   marray *m6 = matrix_dot(m6_a, m6_b);
   marray *m7 = matrix_dot(m7_a, m7_b);
 
+  // free up memory that is no longer required
   matrix_free(a11);
   matrix_free(a12);
   matrix_free(a21);
@@ -288,11 +338,19 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
   matrix_free(m7_a);
   matrix_free(m7_b);
 
+  // check for successful matrix operations
   if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
+    matrix_free(m1);
+    matrix_free(m2);
+    matrix_free(m3);
+    matrix_free(m4);
+    matrix_free(m5);
+    matrix_free(m6);
+    matrix_free(m7);
     return 0;
   }
 
-
+  // calculate final partitions
   marray *c11 = matrix_add(m1, m4);
   matrix_subi(c11, m5);
   matrix_addi(c11, m7);
@@ -305,6 +363,7 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
   matrix_addi(c22, m3);
   matrix_addi(c22, m6);
 
+  // free up memory that is no longer required
   matrix_free(m1);
   matrix_free(m2);
   matrix_free(m3);
@@ -313,6 +372,7 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
   matrix_free(m6);
   matrix_free(m7);
 
+  // check for successful matrix operations
   if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
     matrix_free(c11);
     matrix_free(c12);
@@ -323,6 +383,7 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
 
   from_partitions(result, c11, c12, c21, c22);
 
+  // check for successful matrix operations
   matrix_free(c11);
   matrix_free(c12);
   matrix_free(c21);
@@ -332,11 +393,11 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
 }
 
 marray* matrix_dot(const marray* a, const marray* b) {
-
-  // TODO Think about
+  // TODO Think about (required for linalg back substitution)
   if (a->rows == 0 || a->cols == 0 || b->rows == 0 || b->cols == 0) {
     marray* m = matrix_zeroes(1, 1);
     m->data[0] = 0;
+
     return m;
   }
 
@@ -348,10 +409,16 @@ marray* matrix_dot(const marray* a, const marray* b) {
   }
 
   // check if a and b are quadratic
-  if(a->rows == b->rows && a->cols == b->cols && a->rows == a->cols) {
-    if(a->cols % 2 == 0) {
-      dot_quadratic(m, a, b);
-      return m;
+  if (a->rows == b->rows && a->cols == b->cols && a->rows == a->cols) {
+    if (a->cols % 2 == 0) {
+      if (dot_quadratic(m, a, b)) {
+        return m;
+      }
+
+      // dot_quadratic was not successful -> free matrix and return false
+      matrix_free(m);
+
+      return NULL;
     }
   }
 

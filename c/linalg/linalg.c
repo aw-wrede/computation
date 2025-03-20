@@ -85,7 +85,6 @@ bool linalg_gaussian_elimination(const marray *a, const marray *b) {
 }
 
 marray* linalg_back_substitution(const marray* a, const marray* b) {
-
   marray* x = matrix_zeroes(a->cols, 1);
 
   for (int i = a->cols - 1; i >= 0; i--) {
@@ -150,7 +149,7 @@ marray* linalg_solve(const marray* a, const marray* b) {
   marray* a_copy = matrix_copy(a);
   marray* b_copy = matrix_copy(b);
 
-  // abort if copies could not created
+  // abort if copies could not be created
   if (a_copy == NULL || b_copy == NULL) {
     matrix_free(a_copy);
     matrix_free(b_copy);
