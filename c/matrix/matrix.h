@@ -146,6 +146,42 @@ Output:
 marray* matrix_sub(const marray* a, const marray* b);
 
 /*
+Multiples each element of matrix a with b
+
+Input:
+  marray* a: matrix which will be multiplied with b
+  double b: value that the matrix a will be multiplied with
+
+Output:
+  None, but the matrix a is the result of the multiplication
+*/
+void matrix_muli_val(const marray* a, double b);
+
+/*
+Multiples each element of matrix a with b
+
+Input:
+  marray* a: matrix which will be multiplied with b
+  double b: value that the matrix a will be multiplied with
+
+Output:
+  marray*: pointer to the matrix containing the result of the multiplication
+*/
+marray* matrix_mul_val(const marray* a, double b);
+
+/*
+Creates a partition or sub-area of the given matrix
+Input:
+  marray** dest: pointer in which the new matrix partition pointer is to be saved
+  marray* m: matrix from which a partition is to be created
+  row_start: row index to start (included)
+  row_end: row index to end (excluded)
+  col_start: column index to start (included)
+  col_end: column index to end (excluded)
+*/
+void matrix_get_partition(marray** dest, const marray* m, int row_start, int row_end, int col_start, int col_end);
+
+/*
 Calculates the dot product of two matrices
 
 Input:

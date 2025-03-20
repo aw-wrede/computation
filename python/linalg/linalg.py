@@ -58,3 +58,47 @@ def gaussian_elimination(a: np.ndarray, b:np.ndarray):
             b[row] -= factor * b[i]
 
     return a, b
+
+def back_substitution(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    Performs back substitution on given upper triangular matrix a with b
+    :param a: Upper triangular matrix containing the linear equations
+    :param b: Matrix containing the results of the linear equations
+    :return: Solution vector
+    """
+    n, m = a.shape
+    if n != m:
+        raise ValueError("Matrix a must be square!")
+
+    if b.shape[0] != n:
+        raise ValueError("Vector b must have same number of rows as matrix A!")
+
+    # Initialize solution vector with proper size
+    x = np.zeros(m)
+
+    for i in range(m - 1, -1, -1):
+        pivot = a[i, i]
+
+        if pivot == 0:
+            raise ValueError("Matrix a has zero at pivot element [{}, {}] and is not solvable!".format(i, i))
+
+        x[i] = ( b[i] - np.dot(a[i, i+1:], x[i+1:]) ) / pivot
+        print("i={}".format(i))
+        print(a[i, i+1:])
+        print(x[i+1:])
+
+    return x
+
+def solve(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    Solves the given system of linear equations
+    :param a: Matrix containing the linear equations
+    :param b: Matrix containing the results of the linear equations
+    :return: Solution vector
+    """
+    # Create copies of input matrix and vector to leave them unmodified
+    a = a.copy()
+    b = b.copy()
+
+    gaussian_elimination(a, b)
+    return back_substitution(a, b)

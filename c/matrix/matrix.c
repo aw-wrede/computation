@@ -166,6 +166,30 @@ marray* matrix_sub(const marray* a, const marray* b) {
   return m;
 }
 
+void matrix_muli_val(const marray* a, const double b) {
+
+  for(int i = 0; i < a->rows * a->cols; i++) {
+    a->data[i] = a->data[i] * b;
+  }
+
+}
+
+marray* matrix_mul_val(const marray* a, const double b) {
+
+  marray* result = matrix_zeroes(a->rows, a->cols);
+
+  if(result == NULL) {
+    return NULL;
+  }
+
+  for(int i = 0; i < a->rows * a->cols; i++) {
+    a->data[i] = a->data[i] * b;
+  }
+
+  return result;
+
+}
+
 void dot_general(const marray* result, const marray* a, const marray* b) {
   for(int i = 0; i < a->rows; i++) {
     for(int j = 0; j < b->cols; j++) {
@@ -179,20 +203,20 @@ void dot_general(const marray* result, const marray* a, const marray* b) {
   }
 }
 
-void get_partition(marray** p, const marray* a,  const int rowStart, const int rowEnd, const int colStart, const int colEnd) {
-  *p = matrix_zeroes(rowEnd - rowStart, colEnd - colStart);
-  for(int i = 0; i < rowEnd - rowStart; i++) {
+void matrix_get_partition(marray** dest, const marray* m, const int row_start, const int row_end, const int col_start, const int col_end) {
+  *dest = matrix_zeroes(row_end - row_start, col_end - col_start);
+  for(int i = 0; i < row_end - row_start; i++) {
     // dest: i-th row of p
     // src: i + row_start of matrix a, skip rows behind start row
-    memcpy( &(*p)->data[i * (*p)->cols], &a->data[(i + rowStart) * a->cols + colStart], sizeof(double) * (*p)->cols );
+    memcpy( &(*dest)->data[i * (*dest)->cols], &m->data[(i + row_start) * m->cols + col_start], sizeof(double) * (*dest)->cols );
   }
 }
 
 int get_partitions(const marray* a, marray** a11, marray** a12, marray** a21, marray** a22) {
-  get_partition(a11, a, 0,         a->rows/2, 0,         a->cols/2);
-  get_partition(a12, a, 0,         a->rows/2, a->cols/2, a->cols);
-  get_partition(a21, a, a->rows/2, a->rows,   0,         a->cols/2);
-  get_partition(a22, a, a->rows/2, a->rows,   a->cols/2, a->cols);
+  matrix_get_partition(a11, a, 0,         a->rows/2, 0,         a->cols/2);
+  matrix_get_partition(a12, a, 0,         a->rows/2, a->cols/2, a->cols);
+  matrix_get_partition(a21, a, a->rows/2, a->rows,   0,         a->cols/2);
+  matrix_get_partition(a22, a, a->rows/2, a->rows,   a->cols/2, a->cols);
 
   if(*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
     return 0;
@@ -309,8 +333,15 @@ int dot_quadratic(marray* result, const marray* a, const marray* b) {
 
 marray* matrix_dot(const marray* a, const marray* b) {
 
+  // TODO Think about
+  if (a->rows == 0 || a->cols == 0 || b->rows == 0 || b->cols == 0) {
+    marray* m = matrix_zeroes(1, 1);
+    m->data[0] = 0;
+    return m;
+  }
+
   // alloc matrix to store result
-  marray* m = matrix_zeroes(a->rows, a->cols);
+  marray* m = matrix_zeroes(a->rows, b->cols);
 
   if (m == NULL) {
     return NULL;

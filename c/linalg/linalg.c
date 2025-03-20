@@ -84,6 +84,65 @@ bool linalg_gaussian_elimination(const marray *a, const marray *b) {
   return 1;
 }
 
+marray* back_substitution(const marray* a, const marray* b) {
+
+  marray* x = matrix_zeroes(a->cols, 1);
+
+  for (int i = a->cols - 1; i >= 0; i--) {
+
+    const double pivot = a->data[i * a->cols + i];
+
+    // if pivot is zero the system is unsolvable with back substitution
+    if (pivot == 0.0) { //TODO Discuss use of close function instead
+      return NULL;
+    }
+
+    // calculate x_i
+    // x[i] = ( b[i] - a[i, i+1:] * x[i+1:] ) / pivot
+    marray* a_i = NULL;
+    marray* x_i = NULL;
+
+    matrix_get_partition(&a_i, a, i, i+1, i+1, a->cols);
+    matrix_get_partition(&x_i, x, i+1, x->rows, 0, 1);
+
+    printf("\ni=%d a_i %dx%d:\n", i, a_i->rows, a_i->cols);
+    matrix_print(a_i);
+    printf("\nx_i %dx%d:\n", x_i->rows, x_i->cols);
+    matrix_print(x_i);
+
+    // check for errors
+    if (a_i == NULL || x_i == NULL) {
+      return NULL;
+    }
+
+    // dot = a[i, i+1:] * x[i+1:]
+    marray* dot = matrix_dot(a_i, x_i);
+
+    // check for errors
+    if (dot == NULL) {
+      return NULL;
+    }
+
+    printf("dot %dx%d:\n", dot->rows, dot->cols);
+    matrix_print(dot);
+
+    // result = >(b[i] - dot) / pivot
+    const double result = (b->data[i] - dot->data[0]) / pivot;
+
+    // copy result into x
+    x->data[i] = result;
+    printf("x[%d]= %lf\n", i, result);
+
+    // free temp matrices
+    matrix_free(a_i);
+    matrix_free(x_i);
+    matrix_free(dot);
+
+  }
+  printf("\n");
+  return x;
+}
+
 marray* linalg_solve(const marray* a, const marray* b) {
 
   if (a == NULL || b == NULL) {
