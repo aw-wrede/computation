@@ -84,7 +84,7 @@ bool linalg_gaussian_elimination(const marray *a, const marray *b) {
   return 1;
 }
 
-marray* back_substitution(const marray* a, const marray* b) {
+marray* linalg_back_substitution(const marray* a, const marray* b) {
 
   marray* x = matrix_zeroes(a->cols, 1);
 
