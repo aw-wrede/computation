@@ -3,7 +3,7 @@ from encodings import undefined
 import numpy as np
 
 
-def gaussian_elimination(a: np.ndarray, b:np.ndarray) -> (np.ndarray, np.ndarray):
+def gaussian_elimination(a: np.ndarray, b:np.ndarray):
     """
     Performs Gaussian elimination on the input matrices a and b
     :param a: Matrix containing the linear equations
@@ -21,10 +21,6 @@ def gaussian_elimination(a: np.ndarray, b:np.ndarray) -> (np.ndarray, np.ndarray
                 pivot_index = i
 
         return pivot_index
-
-    # Create copies of input matrix and vector to leave them unmodified
-    a = a.copy()
-    b = b.copy()
 
     n, m = a.shape
     if n != m:
