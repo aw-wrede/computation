@@ -146,7 +146,29 @@ marray* linalg_solve(const marray* a, const marray* b) {
     return NULL;
   }
 
-  //TODO
+  // create copies of a and b because they will be modified
+  marray* a_copy = matrix_copy(a);
+  marray* b_copy = matrix_copy(b);
 
-  return NULL;
+  // abort if copies could not created
+  if (a_copy == NULL || b_copy == NULL) {
+    matrix_free(a_copy);
+    matrix_free(b_copy);
+    return NULL;
+  }
+
+  // abort if gauss was not successful
+  if (!linalg_gaussian_elimination(a_copy, b_copy)) {
+    matrix_free(a_copy);
+    matrix_free(b_copy);
+    return NULL;
+  }
+
+  marray* x = linalg_back_substitution(a_copy, b_copy);
+
+  // free temp matrices
+  matrix_free(a_copy);
+  matrix_free(b_copy);
+
+  return x;
 }
