@@ -170,11 +170,11 @@ void dot_general(const marray* result, const marray* a, const marray* b) {
   for(int i = 0; i < a->rows; i++) {
     for(int j = 0; j < b->cols; j++) {
       double val = 0;
-      for(int k = 0; k < a->rows; k++) {
+      for(int k = 0; k < a->cols; k++) {
         val += a->data[i * a->cols + k] * b->data[k * b->cols + j];
       }
 
-      result->data[i * result->rows + j] = val;
+      result->data[i * result->cols + j] = val;
     }
   }
 }
