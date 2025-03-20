@@ -105,11 +105,6 @@ marray* back_substitution(const marray* a, const marray* b) {
     matrix_get_partition(&a_i, a, i, i+1, i+1, a->cols);
     matrix_get_partition(&x_i, x, i+1, x->rows, 0, 1);
 
-    printf("\ni=%d a_i %dx%d:\n", i, a_i->rows, a_i->cols);
-    matrix_print(a_i);
-    printf("\nx_i %dx%d:\n", x_i->rows, x_i->cols);
-    matrix_print(x_i);
-
     // check for errors
     if (a_i == NULL || x_i == NULL) {
       return NULL;
@@ -123,15 +118,11 @@ marray* back_substitution(const marray* a, const marray* b) {
       return NULL;
     }
 
-    printf("dot %dx%d:\n", dot->rows, dot->cols);
-    matrix_print(dot);
-
     // result = >(b[i] - dot) / pivot
     const double result = (b->data[i] - dot->data[0]) / pivot;
 
     // copy result into x
     x->data[i] = result;
-    printf("x[%d]= %lf\n", i, result);
 
     // free temp matrices
     matrix_free(a_i);
@@ -139,7 +130,7 @@ marray* back_substitution(const marray* a, const marray* b) {
     matrix_free(dot);
 
   }
-  printf("\n");
+  
   return x;
 }
 
