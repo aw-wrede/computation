@@ -4,7 +4,7 @@ def dot(a:np.ndarray ,b:np.ndarray) -> np.ndarray:
 
     def get_partitions(a:np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
         """
-        Split input matrix a into 4 partitions
+        Splits input matrix a into 4 partitions
         :param a: Input matrix
         :return: matrix a split into 4 partitions
         """
@@ -20,7 +20,7 @@ def dot(a:np.ndarray ,b:np.ndarray) -> np.ndarray:
 
     def from_partitions(a11: np.ndarray, a12:np.ndarray, a21:np.ndarray, a22:np.ndarray) -> np.ndarray:
         """
-        Combine partitions into one matrix
+        Combines partitions into one matrix
         :param a11: partition
         :param a12: partition
         :param a21: partition
@@ -40,7 +40,7 @@ def dot(a:np.ndarray ,b:np.ndarray) -> np.ndarray:
 
     def dot_general(a:np.ndarray, b:np.ndarray) -> np.ndarray:
         """
-        Calculate dot product of two matrices with general formula
+        Calculates dot product of two matrices with general formula
         :param a: Matrix
         :param b: Matrix
         :return: Dot product of two matrices
@@ -86,6 +86,9 @@ def dot(a:np.ndarray ,b:np.ndarray) -> np.ndarray:
 
     m, n_a = a.shape
     n_b, p = b.shape
+
+    if m == 0 or n_a == 0 or n_b == 0 or p == 0:
+        raise ValueError("Matrix with dimension zero is not allowed")
 
     # Check if matrices are compatible for multiplication
     if n_a != n_b:
