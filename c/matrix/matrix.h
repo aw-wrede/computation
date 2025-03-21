@@ -11,7 +11,7 @@ typedef struct {
 Frees the memory of the given matrix
 
 Input:
-    marray* m: pointer to a matrix
+    marray *m: pointer to a matrix
 
 Output:
     None
@@ -22,7 +22,7 @@ void matrix_free(marray *m);
 Prints the given matrix to console
 
 Input:
-    marray* m: pointer to a matrix
+    marray *m: pointer to a matrix
 
 Output:
     None, but the matrix is displayed in the console
@@ -56,7 +56,7 @@ marray *matrix_identity(const int n);
 Creates a copy of the matrix
 
 Input:
-    marray* m: pointer to the matrix to copy
+    marray *m: pointer to the matrix to copy
 
 Output:
     marray*: pointer to the copy of the input matrix
@@ -67,7 +67,7 @@ marray *matrix_copy(const marray *m);
 Creates the transposed of the given matrix
 
 Input:
-    marray* m: matrix from which the transposed is to be created.
+    marray *m: matrix from which the transposed is to be created.
 
 Output:
     marray*: pointer to the transposed
@@ -78,7 +78,7 @@ marray *matrix_transposed(const marray *m);
 Adds the value b to the matrix a
 
 Input:
-    marray* a: matrix to which the matrix b is added
+    marray *a: matrix to which the matrix b is added
     double b: value that is added to the matrix a
 
 Output:
@@ -90,7 +90,7 @@ void matrix_addi_val(const marray *a, double b);
 Calculates the result of the matrix a, to which value b is added
 
 Input:
-    marray* a: matrix to which the value b is added
+    marray *a: matrix to which the value b is added
     double b: value that is added to the matrix a
 
 Output:
@@ -102,8 +102,8 @@ marray *matrix_add_val(const marray *a, double b);
 Adds the second b matrix to the first matrix a
 
 Input:
-    marray* a: matrix to which the matrix b is added
-    marray* b: matrix that is added to the matrix a
+    marray *a: matrix to which the matrix b is added
+    marray *b: matrix that is added to the matrix a
 
 Output:
     None, but the matrix a is the result of the matrix addition of a and b
@@ -114,8 +114,8 @@ void matrix_addi(const marray *a, const marray *b);
 Calculates the matrix addition of a and b
 
 Input:
-    marray* a: matrix to which the matrix b is added
-    marray* b: matrix that is added to the matrix a
+    marray *a: matrix to which the matrix b is added
+    marray *b: matrix that is added to the matrix a
 
 Output:
     marray*: pointer to the result of the matrix addition of a and b
@@ -126,8 +126,8 @@ marray *matrix_add(const marray *a, const marray *b);
 Subtracts the second b matrix to the first matrix a
 
 Input:
-    marray* a: matrix to which the matrix b is subtracted
-    marray* b: matrix that is subtracted from the matrix a
+    marray *a: matrix to which the matrix b is subtracted
+    marray *b: matrix that is subtracted from the matrix a
 
 Output:
     None, but the matrix a is the result of the matrix subtraction of a and b
@@ -138,8 +138,8 @@ void matrix_subi(const marray *a, const marray *b);
 Calculates the matrix subtraction of a and b
 
 Input:
-    marray* a: matrix to which the matrix b is subtracted
-    marray* b: matrix that is subtracted from the matrix a
+    marray *a: matrix to which the matrix b is subtracted
+    marray *b: matrix that is subtracted from the matrix a
 
 Output:
     marray*: pointer to the result of the matrix addition of a and b
@@ -150,7 +150,7 @@ marray *matrix_sub(const marray *a, const marray *b);
 Multiples each element of matrix a with b
 
 Input:
-    marray* a: matrix which will be multiplied with b
+    marray *a: matrix which will be multiplied with b
     double b: value that the matrix a will be multiplied with
 
 Output:
@@ -162,7 +162,7 @@ void matrix_muli_val(const marray *a, double b);
 Multiples each element of matrix a with b
 
 Input:
-    marray* a: matrix which will be multiplied with b
+    marray *a: matrix which will be multiplied with b
     double b: value that the matrix a will be multiplied with
 
 Output:
@@ -174,8 +174,8 @@ marray *matrix_mul_val(const marray *a, double b);
 Creates a partition or sub-area of the given matrix
 
 Input:
-    marray** dest: pointer in which the new matrix partition pointer is to be saved
-    marray* m: matrix from which a partition is to be created
+    marray **dest: pointer in which the new matrix partition pointer is to be saved
+    marray *m: matrix from which a partition is to be created
     row_start: row index to start (included)
     row_end: row index to end (excluded)
     col_start: column index to start (included)
@@ -189,8 +189,8 @@ void matrix_get_partition(marray **dest, const marray *m, int row_start, int row
 Calculates the dot product of two matrices
 
 Input:
-    marray* a: a pointer to a matrix
-    marray* b: a pointer to a matrix
+    marray *a: a pointer to a matrix
+    marray *b: a pointer to a matrix
 
 Output:
     marray*: pointer to the result of the matrix dot product a*b

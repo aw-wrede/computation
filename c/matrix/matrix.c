@@ -183,7 +183,9 @@ marray *matrix_sub(const marray *a, const marray *b) {
 }
 
 void matrix_muli_val(const marray *a, const double b) {
-    for (int i = 0; i < a->rows * a->cols; i++) {
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
         a->data[i] = a->data[i] * b;
     }
 }
