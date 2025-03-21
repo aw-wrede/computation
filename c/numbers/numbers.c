@@ -15,6 +15,6 @@ double numbers_compute_epsilon() {
     return eps;
 }
 
-bool numbers_is_close(const double a, const double b, const double rtol, const double atol) {
+bool numbers_close(const double a, const double b, const double rtol, const double atol) {
     return fabs(a - b) <= atol + rtol * fabs(b);
 }

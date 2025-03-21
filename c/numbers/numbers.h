@@ -16,4 +16,4 @@ Input:
 Output:
     bool: Whether the numbers are close to each other
 */
-bool numbers_is_close(double a, double b, double rtol, double atol);
+bool numbers_close(double a, double b, double rtol, double atol);
