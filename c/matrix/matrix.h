@@ -1,5 +1,6 @@
 #ifndef MATRIX_H
 #define MATRIX_H
+#include <stdbool.h>
 
 typedef struct {
     int rows, cols;
@@ -195,5 +196,33 @@ Output:
     marray*: pointer to the result of the matrix dot product a*b
 */
 marray *matrix_dot(const marray *a, const marray *b);
+
+/*
+Checks whether the individual elements of both matrices are close to each other and returns the result per element
+
+Input:
+    marray *a: first matrix
+    marray *b: second matrix, used as reference
+    double rtol: relative tolerance, which depends on the value b (default 1e-05)
+    double atol: absolute tolerance (default 1e-08)
+
+Output:
+    marray*: matrix containing the result of each element
+*/
+marray *matrix_close(const marray *a, const marray *b, const double rtol, const double atol);
+
+/*
+Checks whether the individual elements of both matrices are close to each other
+
+Input:
+    marray *a: first matrix
+    marray *b: second matrix, used as reference
+    double rtol: relative tolerance, which depends on the value b (default 1e-05)
+    double atol: absolute tolerance (default 1e-08)
+
+Output:
+    bool: result of whether the matrices are close to each other
+*/
+bool matrix_close_all(const marray *a, const marray *b, const double rtol, const double atol);
 
 #endif //MATRIX_H

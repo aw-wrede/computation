@@ -1,4 +1,6 @@
 #include "matrix.h"
+
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -427,4 +429,45 @@ marray *matrix_dot(const marray *a, const marray *b) {
     dot_general(m, a, b);
 
     return m;
+}
+
+marray *matrix_close(const marray *a, const marray *b, const double rtol, const double atol) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return NULL;
+    }
+
+    // alloc matrix to store result
+    marray *results = matrix_zeroes(a->rows, a->cols);
+
+    if (results == NULL) {
+        return NULL;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    // get result for each entry and store separately
+    for (int i = 0; i < elems; i++) {
+        results->data[i] = fabs(a->data[i] - b->data[i]) <= atol + rtol * fabs(b->data[i]);
+    }
+
+    return results;
+}
+
+bool matrix_close_all(const marray *a, const marray *b, const double rtol, const double atol) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return false;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    // check each entry, return false if one mismatches
+    for (int i = 0; i < elems; i++) {
+        if (! (fabs(a->data[i] - b->data[i]) <= atol + rtol * fabs(b->data[i]))) {
+            return false;
+        }
+    }
+
+    return true;
 }

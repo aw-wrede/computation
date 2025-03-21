@@ -98,3 +98,32 @@ def dot(a:np.ndarray ,b:np.ndarray) -> np.ndarray:
 
     return dot_general(a, b)
 
+def close(a:np.ndarray, b:np.ndarray, rtol=1e-05, atol=1e-08) -> np.ndarray:
+    """
+    Checks whether the individual elements of both matrices are close to each other and returns the result per element
+    :param a: first matrix
+    :param b: second matrix, used as reference
+    :param rtol: relative tolerance, which depends on the value b
+    :param atol: absolute tolerance
+    :return: matrix containing the result of each element
+    """
+    if a.shape != b.shape:
+        raise ValueError("Matrices must have compatible size")
+
+    results = (np.abs(a - b) <= atol + rtol * abs(b))
+
+    return results
+
+def close_all(a:np.ndarray, b:np.ndarray, rtol=1e-05, atol=1e-08) -> bool:
+    """
+        Checks whether the individual elements of both matrices are close to each other
+        :param a: first matrix
+        :param b: second matrix, used as reference
+        :param rtol: relative tolerance, which depends on the value b
+        :param atol: absolute tolerance
+        :return: result of whether the matrices are close to each other
+        """
+    if a.shape != b.shape:
+        raise ValueError("Matrices must have compatible size")
+
+    return np.all(np.abs(a - b) <= (atol + rtol * np.abs(b)))
