@@ -54,4 +54,14 @@ Output:
 */
 carray *cmatrix_zeroes(int rows, int cols);
 
+/*
+Creates a new complex matrix with one on diagonal elements and zero elsewhere
+
+Input:
+    int n: dimensions for quadratic matrix
+
+Output:
+    carray*: pointer to the created identity matrix
+*/
+carray *cmatrix_identity(int n);
 #endif //COMPLEX_H
