@@ -255,6 +255,11 @@ int get_partitions(const marray *a, marray **a11, marray **a12, marray **a21, ma
     matrix_get_partition(a22, a, a->rows / 2, a->rows, a->cols / 2, a->cols);
 
     if (*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
+        // free possibly created matrices
+        matrix_free(*a11);
+        matrix_free(*a12);
+        matrix_free(*a21);
+        matrix_free(*a22);
         return 0;
     }
 
