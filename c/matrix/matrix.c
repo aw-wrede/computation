@@ -27,6 +27,20 @@ void matrix_print(const marray *m) {
     }
 }
 
+void matrix_print_precision(const marray *m, const int precision) {
+    if (m == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            printf("%.*lf\t", precision, m->data[i * m->cols + j]);
+        }
+
+        printf("\n");
+    }
+}
+
 marray *matrix_zeroes(const int rows, const int cols) {
     // alloc mem for structure and data
     // calloc sets the entire memory area to 0
