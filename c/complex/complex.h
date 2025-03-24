@@ -2,6 +2,7 @@
 #define COMPLEX_H
 
 #include <complex.h>
+#include <stdbool.h>
 
 typedef struct {
     int rows, cols;
@@ -50,7 +51,7 @@ Input:
     int cols: amount of columns the matrix will have
 
 Output:
-    marray*: pointer to the created complex matrix with given dimensions and value zero in each element
+    carray*: pointer to the created complex matrix with given dimensions and value zero in each element
 */
 carray *cmatrix_zeroes(int rows, int cols);
 
@@ -108,5 +109,157 @@ Output:
     carray*: pointer to the adjoint
 */
 carray *cmatrix_adjoint(const carray *m);
+
+/*
+Adds the value b to the complex matrix a
+
+Input:
+    carray *a: matrix to which the value b is added
+    double complex b: complex value that is added to the matrix a
+
+Output:
+    None, but the matrix a is the result of the addition
+*/
+void cmatrix_addi_val(const carray *a, double complex b);
+
+/*
+Calculates the result of the complex matrix a, to which value b is added
+
+Input:
+    carray *a: matrix to which the value b is added
+    double complex b: complex value that is added to the matrix a
+
+Output:
+    carray*: pointer to the result of the addition of matrix a and value b
+*/
+carray *cmatrix_add_val(const carray *a, double complex b);
+
+/*
+Adds the second matrix b to the first matrix a
+
+Input:
+    carray *a: matrix to which the matrix b is added
+    carray *b: matrix that is added to the matrix a
+
+Output:
+    None, but the matrix a is the result of the matrix addition of a and b
+*/
+void cmatrix_addi(const carray *a, const carray *b);
+
+/*
+Calculates the complex matrix addition of a and b
+
+Input:
+    carray *a: matrix to which the matrix b is added
+    carray *b: matrix that is added to the matrix a
+
+Output:
+    carray*: pointer to the result of the matrix addition of a and b
+*/
+carray *cmatrix_add(const carray *a, const carray *b);
+
+/*
+Subtracts the second matrix b from the first matrix a
+
+Input:
+    carray *a: matrix to which the matrix b is subtracted
+    carray *b: matrix that is subtracted from the matrix a
+
+Output:
+    None, but the matrix a is the result of the matrix subtraction of a and b
+*/
+void cmatrix_subi(const carray *a, const carray *b);
+
+/*
+Calculates the complex matrix subtraction of a and b
+
+Input:
+    carray *a: matrix to which the matrix b is subtracted
+    carray *b: matrix that is subtracted from the matrix a
+
+Output:
+    carray*: pointer to the result of the matrix addition of a and b
+*/
+carray *cmatrix_sub(const carray *a, const carray *b);
+
+/*
+Multiples each element of the complex matrix a with b
+
+Input:
+    carray *a: matrix which will be multiplied with b
+    double complex b: complex value that the matrix a will be multiplied with
+
+Output:
+    None, but the matrix a is the result of the multiplication
+*/
+void cmatrix_muli_val(const carray *a, double complex b);
+
+/*
+Multiples each element of matrix a with b
+
+Input:
+    carray *a: matrix which will be multiplied with b
+    double complex b: value that the matrix a will be multiplied with
+
+Output:
+    carray*: pointer to the matrix containing the result of the multiplication
+*/
+carray *cmatrix_mul_val(const carray *a, double complex b);
+
+/*
+Creates a partition or sub-area of the given matrix
+
+Input:
+    carray **dest: pointer in which the new matrix partition pointer is to be saved
+    carray *m: matrix from which a partition is to be created
+    row_start: row index to start (included)
+    row_end: row index to end (excluded)
+    col_start: column index to start (included)
+    col_end: column index to end (excluded)
+Output:
+    None, but the given pointer dest contains the pointer in which the new matrix partition pointer is to be saved
+*/
+void cmatrix_get_partition(carray **dest, const carray *m, int row_start, int row_end, int col_start, int col_end);
+
+/*
+Calculates the dot product of two matrices
+
+Input:
+    carray *a: a pointer to a matrix
+    carray *b: a pointer to a matrix
+
+Output:
+    carray*: pointer to the result of the matrix dot product a*b
+*/
+carray *cmatrix_dot(const carray *a, const carray *b);
+
+/*
+Checks whether the individual elements of both matrices are close to each other and returns the result per element
+
+Input:
+    carray *a: first matrix
+    carray *b: second matrix, used as reference
+    double rtol: relative tolerance, which depends on the value b (default 1e-05)
+    double atol: absolute tolerance (default 1e-08)
+
+Output:
+    carray*: matrix containing the result of each element
+*/
+carray *cmatrix_close(const carray *a, const carray *b, double rtol, double atol);
+
+/*
+Checks whether the individual elements of both matrices are close to each other
+
+Input:
+    carray *a: first matrix
+    carray *b: second matrix, used as reference
+    double rtol: relative tolerance, which depends on the value b (default 1e-05)
+    double atol: absolute tolerance (default 1e-08)
+
+Output:
+    bool: result of whether the matrices are close to each other
+*/
+bool cmatrix_close_all(const carray *a, const carray *b, double rtol, double atol);
+
 
 #endif //COMPLEX_H

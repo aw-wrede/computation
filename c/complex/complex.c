@@ -1,7 +1,10 @@
 #include "complex.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+//TODO Think about combining matrix and complex with dtype property in marray
 
 void cmatrix_free(carray *m) {
     if (m == NULL) {
@@ -143,4 +146,392 @@ carray *cmatrix_adjoint(const carray *m) {
     }
 
     return t;
+}
+
+void cmatrix_addi_val(const carray *a, const double complex b) {
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        a->data[i] = a->data[i] + b;
+    }
+}
+
+carray * cmatrix_add_val(const carray *a, const double complex b) {
+    carray *result = cmatrix_zeroes(a->rows, a->cols);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    // copy data to result matrix
+    memcpy(result->data, a->data, sizeof(double complex) * a->rows * a->cols);
+
+    // add b to result matrix
+    cmatrix_addi_val(result, b);
+
+    return result;
+}
+
+void cmatrix_addi(const carray *a, const carray *b) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        a->data[i] = a->data[i] + b->data[i];
+    }
+}
+
+carray * cmatrix_add(const carray *a, const carray *b) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return NULL;
+    }
+
+    carray *m = cmatrix_zeroes(a->rows, a->cols);
+
+    if (m == NULL) {
+        return NULL;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        m->data[i] = a->data[i] + b->data[i];
+    }
+
+    return m;
+}
+
+void cmatrix_subi(const carray *a, const carray *b) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        a->data[i] = a->data[i] - b->data[i];
+    }
+}
+
+carray * cmatrix_sub(const carray *a, const carray *b) {
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return NULL;
+    }
+
+    carray *m = cmatrix_zeroes(a->rows, a->cols);
+
+    if (m == NULL) {
+        return NULL;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        m->data[i] = a->data[i] - b->data[i];
+    }
+
+    return m;
+}
+
+void cmatrix_muli_val(const carray *a, const double complex b) {
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        a->data[i] = a->data[i] * b;
+    }
+}
+
+carray * cmatrix_mul_val(const carray *a, const double complex b) {
+    carray *result = cmatrix_zeroes(a->rows, a->cols);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    for (int i = 0; i < elems; i++) {
+        a->data[i] = a->data[i] * b;
+    }
+
+    return result;
+}
+
+void cdot_general(const carray *result, const carray *a, const carray *b) {
+    for (int i = 0; i < a->rows; i++) {
+        const int row = i * a->cols;
+
+        for (int j = 0; j < b->cols; j++) {
+            double complex val = 0;
+
+            for (int k = 0; k < a->cols; k++) {
+                val += a->data[row + k] * b->data[k * b->cols + j];
+            }
+
+            result->data[i * result->cols + j] = val;
+        }
+    }
+}
+
+void cmatrix_get_partition(carray **dest, const carray *m, const int row_start, const int row_end, const int col_start,
+    const int col_end) {
+    *dest = cmatrix_zeroes(row_end - row_start, col_end - col_start);
+
+    for (int i = 0; i < row_end - row_start; i++) {
+        // dest: i-th row of p
+        // src: i + row_start of matrix a, skip rows behind start row
+        memcpy(&(*dest)->data[i * (*dest)->cols], &m->data[(i + row_start) * m->cols + col_start],
+               sizeof(double complex) * (*dest)->cols);
+    }
+}
+
+int cget_partitions(const carray *a, carray **a11, carray **a12, carray **a21, carray **a22) {
+    cmatrix_get_partition(a11, a, 0, a->rows / 2, 0, a->cols / 2);
+    cmatrix_get_partition(a12, a, 0, a->rows / 2, a->cols / 2, a->cols);
+    cmatrix_get_partition(a21, a, a->rows / 2, a->rows, 0, a->cols / 2);
+    cmatrix_get_partition(a22, a, a->rows / 2, a->rows, a->cols / 2, a->cols);
+
+    if (*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
+        // free possibly created matrices
+        cmatrix_free(*a11);
+        cmatrix_free(*a12);
+        cmatrix_free(*a21);
+        cmatrix_free(*a22);
+        return 0;
+    }
+
+    return 1;
+}
+
+void capply_partition(const carray *dest, const carray *m, const int row, const int col) {
+    for (int i = 0; i < m->rows; i++) {
+        const int dest_offset = (i + row) * dest->cols + col;
+        const int src_row = i * m->cols;
+
+        for (int j = 0; j < m->cols; j++) {
+            dest->data[dest_offset + j] = m->data[src_row + j];
+        }
+    }
+}
+
+void cfrom_partitions(const carray *dest, const carray *a11, const carray *a12, const carray *a21, const carray *a22) {
+    const int n = dest->rows;
+
+    capply_partition(dest, a11, 0, 0);
+    capply_partition(dest, a12, 0, n / 2);
+    capply_partition(dest, a21, n / 2, 0);
+    capply_partition(dest, a22, n / 2, n / 2);
+}
+
+int cdot_quadratic(const carray *result, const carray *a, const carray *b) {
+    //TODO Think about better solution to free matrices if errors occur
+
+    carray *a11 = NULL, *a12 = NULL, *a21 = NULL, *a22 = NULL;
+    carray *b11 = NULL, *b12 = NULL, *b21 = NULL, *b22 = NULL;
+
+    // check if partitions created successfully
+    if (!cget_partitions(a, &a11, &a12, &a21, &a22) || !cget_partitions(b, &b11, &b12, &b21, &b22)) {
+        return 0;
+    }
+
+    // intermediate steps
+    carray *m1_a = cmatrix_add(a11, a22), *m1_b = cmatrix_add(b11, b22);
+    carray *m2_a = cmatrix_add(a21, a22);
+    carray *m3_b = cmatrix_sub(b12, b22);
+    carray *m4_b = cmatrix_sub(b21, b11);
+    carray *m5_a = cmatrix_add(a11, a12);
+    carray *m6_a = cmatrix_sub(a21, a11), *m6_b = cmatrix_add(b11, b12);
+    carray *m7_a = cmatrix_sub(a12, a22), *m7_b = cmatrix_add(b21, b22);
+
+    // check for successful matrix operations
+    if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
+        m6_b == NULL || m7_a == NULL || m7_b == NULL) {
+        cmatrix_free(a11);
+        cmatrix_free(a12);
+        cmatrix_free(a21);
+        cmatrix_free(a22);
+
+        cmatrix_free(b11);
+        cmatrix_free(b12);
+        cmatrix_free(b21);
+        cmatrix_free(b22);
+
+        cmatrix_free(m1_a);
+        cmatrix_free(m1_b);
+        cmatrix_free(m2_a);
+        cmatrix_free(m3_b);
+        cmatrix_free(m4_b);
+        cmatrix_free(m5_a);
+        cmatrix_free(m6_a);
+        cmatrix_free(m6_b);
+        cmatrix_free(m7_a);
+        cmatrix_free(m7_b);
+
+        return 0;
+    }
+
+    carray *m1 = cmatrix_dot(m1_a, m1_b);
+    carray *m2 = cmatrix_dot(m2_a, b11);
+    carray *m3 = cmatrix_dot(a11, m3_b);
+    carray *m4 = cmatrix_dot(a22, m4_b);
+    carray *m5 = cmatrix_dot(m5_a, b22);
+    carray *m6 = cmatrix_dot(m6_a, m6_b);
+    carray *m7 = cmatrix_dot(m7_a, m7_b);
+
+    // free up memory that is no longer required
+    cmatrix_free(a11);
+    cmatrix_free(a12);
+    cmatrix_free(a21);
+    cmatrix_free(a22);
+
+    cmatrix_free(b11);
+    cmatrix_free(b12);
+    cmatrix_free(b21);
+    cmatrix_free(b22);
+
+    cmatrix_free(m1_a);
+    cmatrix_free(m1_b);
+    cmatrix_free(m2_a);
+    cmatrix_free(m3_b);
+    cmatrix_free(m4_b);
+    cmatrix_free(m5_a);
+    cmatrix_free(m6_a);
+    cmatrix_free(m6_b);
+    cmatrix_free(m7_a);
+    cmatrix_free(m7_b);
+
+    // check for successful matrix operations
+    if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
+        cmatrix_free(m1);
+        cmatrix_free(m2);
+        cmatrix_free(m3);
+        cmatrix_free(m4);
+        cmatrix_free(m5);
+        cmatrix_free(m6);
+        cmatrix_free(m7);
+        return 0;
+    }
+
+    // calculate final partitions
+    carray *c11 = cmatrix_add(m1, m4);
+    cmatrix_subi(c11, m5);
+    cmatrix_addi(c11, m7);
+
+    carray *c12 = cmatrix_add(m3, m5);
+
+    carray *c21 = cmatrix_add(m2, m4);
+
+    carray *c22 = cmatrix_sub(m1, m2);
+    cmatrix_addi(c22, m3);
+    cmatrix_addi(c22, m6);
+
+    // free up memory that is no longer required
+    cmatrix_free(m1);
+    cmatrix_free(m2);
+    cmatrix_free(m3);
+    cmatrix_free(m4);
+    cmatrix_free(m5);
+    cmatrix_free(m6);
+    cmatrix_free(m7);
+
+    // check for successful matrix operations
+    if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
+        cmatrix_free(c11);
+        cmatrix_free(c12);
+        cmatrix_free(c21);
+        cmatrix_free(c22);
+        return 0;
+    }
+
+    cfrom_partitions(result, c11, c12, c21, c22);
+
+    // check for successful matrix operations
+    cmatrix_free(c11);
+    cmatrix_free(c12);
+    cmatrix_free(c21);
+    cmatrix_free(c22);
+
+    return 1;
+}
+
+carray * cmatrix_dot(const carray *a, const carray *b) {
+    // TODO Think about (required for linalg back substitution)
+    if (a->rows == 0 || a->cols == 0 || b->rows == 0 || b->cols == 0) {
+        carray *m = cmatrix_zeroes(1, 1);
+        m->data[0] = 0;
+
+        return m;
+    }
+
+    // alloc matrix to store result
+    carray *m = cmatrix_zeroes(a->rows, b->cols);
+
+    if (m == NULL) {
+        return NULL;
+    }
+
+    // check if a and b are quadratic
+    if (a->rows == b->rows && a->cols == b->cols && a->rows == a->cols) {
+        if (a->cols % 2 == 0) {
+            if (cdot_quadratic(m, a, b)) {
+                return m;
+            }
+
+            // dot_quadratic was not successful -> free matrix and return false
+            cmatrix_free(m);
+
+            return NULL;
+        }
+    }
+
+    cdot_general(m, a, b);
+
+    return m;
+}
+
+carray * cmatrix_close(const carray *a, const carray *b, const double rtol, const double atol) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return NULL;
+    }
+
+    // alloc matrix to store result
+    carray *results = cmatrix_zeroes(a->rows, a->cols);
+
+    if (results == NULL) {
+        return NULL;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    // get result for each entry and store separately
+    for (int i = 0; i < elems; i++) {
+        results->data[i] = cabs(a->data[i] - b->data[i]) <= atol + rtol * cabs(b->data[i]);
+    }
+
+    return results;
+}
+
+bool cmatrix_close_all(const carray *a, const carray *b, const double rtol, const double atol) {
+    // Check dimensions
+    if (a->rows != b->rows || a->cols != b->cols) {
+        return false;
+    }
+
+    const int elems = a->rows * a->cols;
+
+    // check each entry, return false if one mismatches
+    for (int i = 0; i < elems; i++) {
+        if (! (cabs(a->data[i] - b->data[i]) <= atol + rtol * cabs(b->data[i]))) {
+            return false;
+        }
+    }
+
+    return true;
 }
