@@ -30,6 +30,18 @@ Output:
 void matrix_print(const marray *m);
 
 /*
+Prints the given matrix to console with given precision
+
+Input:
+    marray *m: pointer to a matrix
+    int precision: amount of decimals should be printed
+
+Output:
+    None, but the matrix is displayed in the console with given decimal precision
+*/
+void matrix_print_precision(const marray *m, int precision);
+
+/*
 Creates a new matrix with given dimension (rows x cols) with value zero in each element
 
 Input:
