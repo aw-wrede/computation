@@ -1,5 +1,6 @@
 #include "complex.h"
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -534,4 +535,47 @@ bool cmatrix_close_all(const carray *a, const carray *b, const double rtol, cons
     }
 
     return true;
+}
+
+carray *dft_matrix(const int n) {
+    carray *f = cmatrix_zeroes(n, n);
+
+    if (f == NULL) {
+        return NULL;
+    }
+
+    // calculate omega (counter clockwise -> positive sign)
+    const double complex omega = cexp(-1 * I * 2 * M_PI / n);
+
+    // calculate all different unit roots
+    carray *omegas = cmatrix_zeroes(1, n);
+
+    if (omegas == NULL) {
+        // free f if omegas matrix could not be created
+        cmatrix_free(f);
+        return NULL;
+    }
+
+    const double n_sqrt = sqrt(n);
+    for (int i = 0; i < n; i++) {
+        // normalize unit root with 1/sqrt(n)
+        omegas->data[i] = cpow(omega, i) / n_sqrt;
+    }
+
+    // fill matrix with unit roots
+    for (int k = 0; k < n; k++) {
+        for (int l = 0; l < n; l++) {
+            // there are only n different unit roots -> calculate required one
+            const double complex result = omegas->data[k * l % n];
+
+            // dft matrix is symmetric -> set symmetry pairs
+            f->data[k * f->cols + l] = result;
+            f->data[l * f->cols + k] = result;
+        }
+    }
+
+    // free temp matrix
+    cmatrix_free(omegas);
+
+    return f;
 }

@@ -261,5 +261,15 @@ Output:
 */
 bool cmatrix_close_all(const carray *a, const carray *b, double rtol, double atol);
 
+/*
+Creates the dft matrix with given dimension
+
+Input:
+    int n: dimension of the dft matrix
+
+Output:
+    carray*: pointer to the created dft matrix of size n*n
+*/
+carray *dft_matrix(int n);
 
 #endif //COMPLEX_H
