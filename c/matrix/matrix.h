@@ -90,7 +90,7 @@ marray *matrix_transposed(const marray *m);
 Adds the value b to the matrix a
 
 Input:
-    marray *a: matrix to which the matrix b is added
+    marray *a: matrix to which the value b is added
     double b: value that is added to the matrix a
 
 Output:
@@ -111,7 +111,7 @@ Output:
 marray *matrix_add_val(const marray *a, double b);
 
 /*
-Adds the second b matrix to the first matrix a
+Adds the second matrix b to the first matrix a
 
 Input:
     marray *a: matrix to which the matrix b is added
@@ -135,7 +135,7 @@ Output:
 marray *matrix_add(const marray *a, const marray *b);
 
 /*
-Subtracts the second b matrix to the first matrix a
+Subtracts the second matrix b from the first matrix a
 
 Input:
     marray *a: matrix to which the matrix b is subtracted
