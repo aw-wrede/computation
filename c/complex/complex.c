@@ -78,3 +78,15 @@ carray *cmatrix_identity(const int n) {
 
     return m;
 }
+
+carray *cmatrix_copy(const carray *m) {
+    carray *copy = cmatrix_zeroes(m->rows, m->cols);
+
+    if (copy == NULL) {
+        return NULL;
+    }
+
+    memcpy(copy->data, m->data, m->rows * m->cols * sizeof(double complex));
+
+    return copy;
+}

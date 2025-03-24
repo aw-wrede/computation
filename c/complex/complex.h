@@ -64,4 +64,15 @@ Output:
     carray*: pointer to the created identity matrix
 */
 carray *cmatrix_identity(int n);
+
+/*
+Creates a copy of the complex matrix
+
+Input:
+    carray *m: pointer to the matrix to copy
+
+Output:
+    carray*: pointer to the copy of the input matrix
+*/
+carray *cmatrix_copy(const carray *m);
 #endif //COMPLEX_H
