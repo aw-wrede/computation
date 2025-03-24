@@ -90,3 +90,57 @@ carray *cmatrix_copy(const carray *m) {
 
     return copy;
 }
+
+carray *cmatrix_transposed(const carray *m) {
+    carray *t = cmatrix_zeroes(m->cols, m->rows);
+
+    if (t == NULL) {
+        return NULL;
+    }
+
+    for (int i = 0; i < t->rows; i++) {
+        const int row = i * t->cols;
+
+        for (int j = 0; j < t->cols; j++) {
+            t->data[row + j] = m->data[j * m->cols + i];
+        }
+    }
+
+    return t;
+}
+
+carray * cmatrix_conj(const carray *m) {
+    carray *c = cmatrix_zeroes(m->rows, m->cols);
+
+    if (c == NULL) {
+        return NULL;
+    }
+
+    for (int i = 0; i < c->rows; i++) {
+        const int row = i * c->cols;
+
+        for (int j = 0; j < c->cols; j++) {
+            c->data[row + j] = conj(m->data[row + j]);
+        }
+    }
+
+    return c;
+}
+
+carray *cmatrix_adjoint(const carray *m) {
+    carray *t = cmatrix_zeroes(m->cols, m->rows);
+
+    if (t == NULL) {
+        return NULL;
+    }
+
+    for (int i = 0; i < t->rows; i++) {
+        const int row = i * t->cols;
+
+        for (int j = 0; j < t->cols; j++) {
+            t->data[row + j] = conj(m->data[j * m->cols + i]);
+        }
+    }
+
+    return t;
+}
