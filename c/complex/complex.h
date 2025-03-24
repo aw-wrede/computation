@@ -75,4 +75,38 @@ Output:
     carray*: pointer to the copy of the input matrix
 */
 carray *cmatrix_copy(const carray *m);
+
+/*
+Creates the transposed of the given complex matrix
+
+Input:
+    carray *m: matrix from which the transposed is to be created.
+
+Output:
+    carray*: pointer to the transposed
+*/
+carray *cmatrix_transposed(const carray *m);
+
+/*
+Creates the complex-conjugate of the given matrix
+
+Input:
+    carray *m: matrix from which the complex-conjugate is to be created.
+
+Output:
+    carray*: pointer to the complex-conjugate
+*/
+carray * cmatrix_conj(const carray *m);
+
+/*
+Creates the adjoint (conjugate transpose) of the given matrix
+
+Input:
+    carray *m: matrix from which the adjoint is to be created.
+
+Output:
+    carray*: pointer to the adjoint
+*/
+carray *cmatrix_adjoint(const carray *m);
+
 #endif //COMPLEX_H
