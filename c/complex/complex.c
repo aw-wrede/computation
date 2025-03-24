@@ -64,3 +64,17 @@ carray *cmatrix_zeroes(const int rows, const int cols) {
 
     return m;
 }
+
+carray *cmatrix_identity(const int n) {
+    carray *m = cmatrix_zeroes(n, n);
+
+    if (m == NULL) {
+        return NULL;
+    }
+
+    for (int i = 0; i < n; i++) {
+        m->data[i * n + i] = 1.0;
+    }
+
+    return m;
+}
