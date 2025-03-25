@@ -272,4 +272,17 @@ Output:
 */
 carray *dft_matrix(int n);
 
+/*
+Checks if a matrix is unitary
+
+Input:
+    carray *m: matrix to be checked
+    double rtol: relative tolerance to the unit matrix
+    double atol: absolute tolerance to the unit matrix
+
+Output:
+    bool: whether the matrix is unitary
+*/
+bool cmatrix_is_unitary(const carray *m, double rtol, double atol);
+
 #endif //COMPLEX_H
