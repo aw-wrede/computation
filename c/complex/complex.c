@@ -579,3 +579,27 @@ carray *dft_matrix(const int n) {
 
     return f;
 }
+
+bool cmatrix_is_unitary(const carray *m, const double rtol, const double atol) {
+    // check if matrix is quadratic
+    if (m->rows != m->cols) {
+        return false;
+    }
+
+    // calculate the adjoint (conjugate transpose) of the matrix to calculate the dot product
+    carray *m_adj = cmatrix_adjoint(m);
+    carray *dot = cmatrix_dot(m, m_adj);
+
+    cmatrix_free(m_adj);
+
+    carray *unit = cmatrix_identity(m->rows);
+
+    // the product of the matrix with its adjoint gives the unit matrix if the matrix is unitary
+    const bool result = cmatrix_close_all(dot, unit, rtol, atol);
+
+    // free temp matrices
+    cmatrix_free(dot);
+    cmatrix_free(unit);
+
+    return result;
+}
