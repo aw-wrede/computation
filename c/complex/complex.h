@@ -4,6 +4,10 @@
 #include <complex.h>
 #include <stdbool.h>
 
+#define COMPLEX_NORM int
+#define COMPLEX_NORM_UNSCALED 0
+#define COMPLEX_NORM_ORTHO 1
+
 typedef struct {
     int rows, cols;
     double complex *data;
@@ -265,12 +269,12 @@ bool cmatrix_close_all(const carray *a, const carray *b, double rtol, double ato
 Creates the dft matrix with given dimension
 
 Input:
-    int n: dimension of the dft matrix
+    COMPLEX_NORM n: dimension of the dft matrix
 
 Output:
     carray*: pointer to the created dft matrix of size n*n
 */
-carray *dft_matrix(int n);
+carray *dft_matrix(int n, COMPLEX_NORM norm);
 
 /*
 Checks if a matrix is unitary
@@ -284,5 +288,30 @@ Output:
     bool: whether the matrix is unitary
 */
 bool cmatrix_is_unitary(const carray *m, double rtol, double atol);
+
+/*
+Performs the Discrete Fourier Transform on a real numpy array
+
+Input:
+    carray *m: real data to be transformed
+    COMPLEX_NORM norm: Normalization mode, default is unscaled
+
+Output:
+    carray*: pointer to the fourier transformed data
+*/
+carray *cmatrix_dft(const carray *m, COMPLEX_NORM norm);
+
+/*
+Performs the Fourier Transform on a real numpy array
+Is fastest when the input length is a power of two
+
+Input:
+    carray *data: real data to be transformed
+    COMPLEX_NORM: Normalization mode
+
+Output:
+    carray*: pointer to the fourier transformed data
+*/
+carray *cmatrix_fft(const carray *data, COMPLEX_NORM norm);
 
 #endif //COMPLEX_H

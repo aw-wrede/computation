@@ -537,14 +537,14 @@ bool cmatrix_close_all(const carray *a, const carray *b, const double rtol, cons
     return true;
 }
 
-carray *dft_matrix(const int n) {
+carray *dft_matrix(const int n, const COMPLEX_NORM norm) {
     carray *f = cmatrix_zeroes(n, n);
 
     if (f == NULL) {
         return NULL;
     }
 
-    // calculate omega (counter clockwise -> positive sign)
+    // calculate omega
     const double complex omega = cexp(-1 * I * 2 * M_PI / n);
 
     // calculate all different unit roots
@@ -556,11 +556,20 @@ carray *dft_matrix(const int n) {
         return NULL;
     }
 
-    const double n_sqrt = sqrt(n);
-    for (int i = 0; i < n; i++) {
-        // normalize unit root with 1/sqrt(n)
-        omegas->data[i] = cpow(omega, i) / n_sqrt;
+    // Normalize unit roots with 1/sqrt(n) if norm is ortho
+    // Otherwise just calculate unit roots
+    if (norm == COMPLEX_NORM_ORTHO) {
+        const double n_sqrt = sqrt(n);
+        for (int i = 0; i < n; i++) {
+            // normalize unit root with 1/sqrt(n)
+            omegas->data[i] = cpow(omega, i) / n_sqrt;
+        }
+    } else {
+        for (int i = 0; i < n; i++) {
+            omegas->data[i] = cpow(omega, i);
+        }
     }
+
 
     // fill matrix with unit roots
     for (int k = 0; k < n; k++) {
@@ -602,4 +611,153 @@ bool cmatrix_is_unitary(const carray *m, const double rtol, const double atol) {
     cmatrix_free(unit);
 
     return result;
+}
+
+
+/* FOURIER TRANSFORMATION */
+
+carray *cmatrix_dft(const carray *m, const COMPLEX_NORM norm) {
+    if (m == NULL) {
+        return NULL;
+    }
+
+    // compute Omega
+    carray *o = dft_matrix(m->rows, norm);
+    if (o == NULL) {
+        return NULL;
+    }
+
+    // perform discrete fourier transform (Omega * m)
+    carray *freq = cmatrix_dot(o, m);
+
+    // free temp matrix
+    cmatrix_free(o);
+
+    return freq;
+}
+
+/*
+Mirrors a binary number with fixed length
+
+Input:
+    int number: number from which the binary representation is to be mirrored
+    int length: fixed number of bits that are set during mirroring
+
+Output:
+    int: mirrored number
+*/
+int bin_mirror(const int number, const int length) {
+    if (number == 0) {
+        return 0;
+    }
+
+    int binary[length];
+
+    // get binary representation of number (inverted)
+    for (int i = 0; i < length; i++) {
+        binary[i] = (number >> i) & 1;
+    }
+
+    int number_mirrored = 0;
+    for (int i = 0; i < length; i++) {
+        number_mirrored = (number_mirrored << 1) | binary[i];
+    }
+
+    return number_mirrored;
+}
+
+/*
+Shuffles the elements of data using bit-reversal of list index.
+
+Input:
+    carray *data: data to be shuffled
+
+Output:
+    carray: Shuffled data array
+*/
+carray *shuffle_bit_reversed_order(const carray *data) {
+    // calculate bits required to store the largest index
+    // a.e. 0001 -> 1000, filling zeroes are needed for mirroring
+    const int bit_length = (int)log2(data->rows);
+
+    carray *shuffled_data = cmatrix_zeroes(data->rows, 1);
+
+    // mirror every index and put entry to this position
+    for (int i = 0; i < data->rows; i++) {
+        const int i_mirrored = bin_mirror(i, bit_length);
+        shuffled_data->data[i_mirrored] = data->data[i];
+    }
+
+    return shuffled_data;
+}
+
+carray *cmatrix_fft(const carray *data, const COMPLEX_NORM norm) {
+    if (data == NULL) {
+        return NULL;
+    }
+
+    // check if data is empty
+    if (data->rows == 0) {
+        return NULL;
+    }
+
+    // check if data is one-dimensional
+    if (data->cols != 1) {
+        return NULL;
+    }
+
+    // check if input length is power of two
+    // otherwise perform slow discrete fourier transform
+    if (data->rows & (data->cols - 1) != 0) {
+        return cmatrix_dft(data, norm);
+    }
+
+    // first step of fft: shuffle data
+    carray *data_shuffled = shuffle_bit_reversed_order(data);
+
+    // second step: iteratively merge transforms
+    const int steps = (int) log2(data->rows);
+
+    for (int step = 0; step < steps; step++) {
+        // k = 2^(step+1)
+        const int k = 1 << (step + 1);
+
+        // unit square root
+        const double complex omega = cexp(-1 * I * 2 * M_PI / k);
+
+        // for each block
+        // each step has 2^(steps-step-1) blocks
+        const int blocks = 1 << (steps - step - 1);
+        for (int i = 0; i < blocks ; i++) {
+            // offset or index of first element in block: i * 2^(step+1)
+            const int block_start = i * (1 << (step + 1));
+
+            // for each pair of elements in a block
+            // every block has 2^(step) elements
+            const int elems = 1 << step;
+            for (int j = 0; j < elems; j++) {
+                // index of first element to calculate
+                const int j_0 = block_start + j;
+                // index of second element to calculate
+                const int j_1 = block_start + j + (1 << step);
+
+                const double complex s_0 = data_shuffled->data[block_start + j] +
+                        cpow(omega, j) * data_shuffled->data[(1 << step) + block_start + j];
+
+                const double complex s_1 = data_shuffled->data[block_start + j] +
+                    cpow(omega, j) * (-1) * data_shuffled->data[(1 << step) + block_start + j];
+
+                data_shuffled->data[j_0] = s_0;
+                data_shuffled->data[j_1] = s_1;
+            }
+
+        }
+    }
+
+    // normalize fft signal with 1/sqrt(n) if norm is ortho
+    if (norm == COMPLEX_NORM_ORTHO) {
+        cmatrix_muli_val(data_shuffled, 1/sqrt(data->rows));
+    }
+
+    return data_shuffled;
 }
