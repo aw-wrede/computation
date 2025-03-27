@@ -290,7 +290,7 @@ Output:
 bool cmatrix_is_unitary(const carray *m, double rtol, double atol);
 
 /*
-Performs the Discrete Fourier Transform on a real numpy array
+Performs the Discrete Fourier Transform on on real values
 
 Input:
     carray *m: real data to be transformed
@@ -302,7 +302,7 @@ Output:
 carray *cmatrix_dft(const carray *m, COMPLEX_NORM norm);
 
 /*
-Performs the Fourier Transform on a real numpy array
+Performs the Fourier Transform on real values
 Is fastest when the input length is a power of two
 
 Input:
