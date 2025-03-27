@@ -11,7 +11,7 @@ def dft_matrix(n: int, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype:np
     :param dtype: data type of the matrix
     :return: DFT matrix of size n*n
     """
-    f = np.ones((n, n), dtype=dtype)
+    f = np.zeros((n, n), dtype=dtype)
 
     # Calculate omega (counter clockwise -> positive sign)
     omega = np.exp(-1j * 2 * np.pi / n)
@@ -19,8 +19,15 @@ def dft_matrix(n: int, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype:np
     # Calculate all different unit roots
     omegas = np.zeros(n, dtype=dtype)
 
-    for i in range(n):
-        omegas[i] = (omega ** i)
+    # Normalize unit roots with 1/sqrt(n) if norm is ortho
+    # Otherwise just calculate unit roots
+    if norm == 'ortho':
+        n_sqrt = np.sqrt(n)
+        for i in range(n):
+            omegas[i] = (omega ** i) / n_sqrt
+    else:
+        for i in range(n):
+            omegas[i] = (omega ** i)
 
     # Fill matrix with unit roots
     for k in range(n):
@@ -29,15 +36,11 @@ def dft_matrix(n: int, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype:np
             f[k, l] = result
             f[l, k] = result
 
-    # Normalize unit root with 1/sqrt(n) if norm is ortho
-    if norm == 'ortho':
-        return f / np.sqrt(n)
-
     return f
 
 def dft(data: np.ndarray, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype: np.dtype = np.complex128) -> np.ndarray:
     """
-    Performs the Discrete Fourier Transform on a real numpy array.
+    Performs the Discrete Fourier Transform on a real numpy array
     :param data: Real data to be transformed
     :param norm: Normalization mode, default is unscaled
     :param dtype: Data type of the fourier transformed data
