@@ -3,28 +3,31 @@ from typing import Literal
 import numpy as np
 
 
-def dft_matrix(n: int, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype:np.dtype = np.complex128) -> np.ndarray:
+def dft_matrix(n: int, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype:np.dtype = np.complex128) -> np.ndarray:
     """
     Constructs the DFT matrix of size n*n
     :param n: size of DFT matrix
-    :param norm: Normalization mode, default is unscaled
+    :param norm: Normalization mode, default is backward (on inverse)
     :param dtype: data type of the matrix
     :return: DFT matrix of size n*n
     """
     f = np.zeros((n, n), dtype=dtype)
 
-    # Calculate omega (counter clockwise -> positive sign)
+    # Calculate omega
     omega = np.exp(-1j * 2 * np.pi / n)
 
     # Calculate all different unit roots
     omegas = np.zeros(n, dtype=dtype)
 
     # Normalize unit roots with 1/sqrt(n) if norm is ortho
-    # Otherwise just calculate unit roots
+    # Normalize unit roots with 1/n if norm is forward
     if norm == 'ortho':
         n_sqrt = np.sqrt(n)
         for i in range(n):
             omegas[i] = (omega ** i) / n_sqrt
+    elif norm == 'forward':
+        for i in range(n):
+            omegas[i] = (omega ** i) / n
     else:
         for i in range(n):
             omegas[i] = (omega ** i)
@@ -38,11 +41,11 @@ def dft_matrix(n: int, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype:np
 
     return f
 
-def dft(data: np.ndarray, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype: np.dtype = np.complex128) -> np.ndarray:
+def dft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype: np.dtype = np.complex128) -> np.ndarray:
     """
     Performs the Discrete Fourier Transform on a real numpy array
     :param data: Real data to be transformed
-    :param norm: Normalization mode, default is unscaled
+    :param norm: Normalization mode, default is backward (on inverse)
     :param dtype: Data type of the fourier transformed data
     :return: Fourier transformed data
     """
@@ -52,6 +55,24 @@ def dft(data: np.ndarray, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype
 
     # Perform Discrete Fourier Transform (Omega * data)
     return np.dot(o, data)
+
+
+def idft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype: np.dtype = np.complex128) -> np.ndarray:
+    """
+        Performs the Inverse Fourier Transform on a complex numpy array
+        :param data: Fourier transformed data
+        :param norm: Normalization mode, default is backward (on inverse)
+        :param dtype: Data type of the inverse data
+        :return: Inverse transformed data
+        """
+
+    if norm == 'ortho':
+        return dft(data.conjugate(), norm=norm, dtype=dtype)
+
+    if norm == 'forward':
+        return dft(data.conjugate(), norm='backward', dtype=dtype)
+    else:
+        return dft(data.conjugate(), norm='forward', dtype=dtype)
 
 
 def bin_mirror(number: int, length: int) -> int:
@@ -73,7 +94,7 @@ def bin_mirror(number: int, length: int) -> int:
 
 def shuffle_bit_reversed_order(data: np.ndarray) -> np.ndarray:
     """
-    Shuffles the  elements of data using bit-reversal of list index.
+    Shuffles the elements of data using bit-reversal of list index.
     :param data: Data to be transformed
     :return: Shuffled data array
     """
@@ -91,11 +112,11 @@ def shuffle_bit_reversed_order(data: np.ndarray) -> np.ndarray:
     return shuffled_data
 
 
-def fft(data: np.ndarray, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype:np.dtype = np.complex128) -> np.ndarray:
+def fft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype:np.dtype = np.complex128) -> np.ndarray:
     """
-    Performs the Fourier Transform on a real numpy array.
+    Performs the Fourier Transform on a real numpy array. Is fastest when the input length is a power of two.
     :param data: Real data to be transformed
-    :param norm: Normalization mode, default is unscaled
+    :param norm: Normalization mode, default is backward (on inverse)
     :param dtype: Data type of the fourier transformed data
     :return: Fourier transformed data
     """
@@ -146,5 +167,25 @@ def fft(data: np.ndarray, norm: Literal['unscaled', 'ortho'] = 'unscaled', dtype
     # Normalize fft signal with 1/sqrt(n) if norm is ortho
     if norm == 'ortho':
         return shuffled_data / np.sqrt(n)
+    # Normalize fft signal with 1/n if norm is forward
+    elif norm == 'forward':
+        return shuffled_data / n
 
     return shuffled_data
+
+
+def ifft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype:np.dtype = np.complex128) -> np.ndarray:
+    """
+    Performs the Inverse Fourier Transform on a complex numpy array. Is fastest when the input length is a power of two.
+    :param data: Fourier transformed data
+    :param norm: Normalization mode, default is backward (on inverse)
+    :param dtype: Data type of the inverse data
+    :return: Inverse transformed data
+    """
+    if norm == 'ortho':
+        return fft(data.conjugate(), norm=norm, dtype=dtype)
+
+    if norm == 'forward':
+        return fft(data.conjugate(), norm='backward', dtype=dtype)
+    else:
+        return fft(data.conjugate(), norm='forward', dtype=dtype)

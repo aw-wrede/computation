@@ -31,11 +31,36 @@ class MyTestCase(unittest.TestCase):
         random = np.random.randn(64)
         self.assertTrue(np.allclose(c.fft.fft(random), np.fft.fft(random)))
         self.assertTrue(np.allclose(c.fft.fft(random, norm='ortho'), np.fft.fft(random, norm='ortho')))
+        self.assertTrue(np.allclose(c.fft.fft(random, norm='forward'), np.fft.fft(random, norm='forward')))
+        self.assertTrue(np.allclose(c.fft.fft(random, norm='backward'), np.fft.fft(random, norm='backward')))
 
     def test_dft(self):
         random = np.random.randn(63)
         self.assertTrue(np.allclose(c.fft.dft(random), np.fft.fft(random)))
         self.assertTrue(np.allclose(c.fft.dft(random, norm='ortho'), np.fft.fft(random, norm='ortho')))
+        self.assertTrue(np.allclose(c.fft.dft(random, norm='forward'), np.fft.fft(random, norm='forward')))
+        self.assertTrue(np.allclose(c.fft.dft(random, norm='backward'), np.fft.fft(random, norm='backward')))
 
+    def test_ifft(self):
+        random = np.random.randn(64)
+        r_fft = c.fft.fft(random)
+        r_ifft = c.fft.ifft(r_fft)
+        self.assertTrue(np.allclose(r_ifft, np.fft.ifft(np.fft.fft(random))))
+        self.assertTrue(np.allclose( c.fft.ifft(c.fft.fft(random, norm='ortho'), norm='ortho'),
+                                     np.fft.ifft(np.fft.fft(random, norm='ortho'), norm='ortho')))
+        self.assertTrue(np.allclose(c.fft.ifft(c.fft.fft(random, norm='forward'), norm='forward'),
+                                    np.fft.ifft(np.fft.fft(random, norm='forward'), norm='forward')))
+        self.assertTrue(np.allclose(c.fft.ifft(c.fft.fft(random, norm='backward'), norm='backward'),
+                                    np.fft.ifft(np.fft.fft(random, norm='backward'), norm='backward')))
+
+    def test_idft(self):
+        random = np.random.randn(63)
+        self.assertTrue(np.allclose(c.fft.idft(c.fft.dft(random)), np.fft.ifft(np.fft.fft(random))))
+        self.assertTrue(np.allclose(c.fft.idft(c.fft.dft(random, norm='ortho'), norm='ortho'),
+                                    np.fft.ifft(np.fft.fft(random, norm='ortho'), norm='ortho')))
+        self.assertTrue(np.allclose(c.fft.idft(c.fft.dft(random, norm='forward'), norm='forward'),
+                                    np.fft.ifft(np.fft.fft(random, norm='forward'), norm='forward')))
+        self.assertTrue(np.allclose(c.fft.idft(c.fft.dft(random, norm='backward'), norm='backward'),
+                                    np.fft.ifft(np.fft.fft(random, norm='backward'), norm='backward')))
 if __name__ == '__main__':
     unittest.main()
