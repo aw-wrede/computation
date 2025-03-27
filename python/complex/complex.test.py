@@ -15,8 +15,9 @@ class MyTestCase(unittest.TestCase):
     rnd_matrix = np.random.randn(4, 3)
 
     def test_dft_matrix(self):
-        # TODO add test cases
-        self.assertEqual(True, True)  # add assertion here
+        self.assertTrue(np.allclose(self.f_4, np.fft.fft(np.eye(4), norm='ortho')))
+        self.assertTrue(np.allclose(self.f_5, np.fft.fft(np.eye(5), norm='ortho')))
+        self.assertTrue(np.allclose(self.f_10, np.fft.fft(np.eye(10), norm='ortho')))
 
     def test_unitary(self):
         self.assertTrue(c.is_unitary(self.f_4))
