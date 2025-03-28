@@ -556,20 +556,32 @@ carray *dft_matrix(const int n, const COMPLEX_NORM norm) {
         return NULL;
     }
 
-    // Normalize unit roots with 1/sqrt(n) if norm is ortho
-    // Otherwise just calculate unit roots
-    if (norm == COMPLEX_NORM_ORTHO) {
-        const double n_sqrt = sqrt(n);
-        for (int i = 0; i < n; i++) {
-            // normalize unit root with 1/sqrt(n)
-            omegas->data[i] = cpow(omega, i) / n_sqrt;
-        }
-    } else {
-        for (int i = 0; i < n; i++) {
-            omegas->data[i] = cpow(omega, i);
-        }
-    }
+    // normalize based on selected mode
+    switch (norm) {
+        // normalize unit roots with 1/sqrt(n) if norm is ortho
+        case COMPLEX_NORM_ORTHO:
+            const double n_sqrt = sqrt(n);
+            for (int i = 0; i < n; i++) {
+                // normalize unit root with 1/sqrt(n)
+                omegas->data[i] = cpow(omega, i) / n_sqrt;
+            }
+            break;
 
+        // normalize unit roots with 1/n if norm is forward
+        case COMPLEX_NORM_FORWARD:
+            for (int i = 0; i < n; i++) {
+                // normalize unit root with 1/n
+                omegas->data[i] = cpow(omega, i) / n;
+            }
+            break;
+
+        // otherwise just calculate unit roots
+        default:
+            for (int i = 0; i < n; i++) {
+                omegas->data[i] = cpow(omega, i);
+            }
+            break;
+    }
 
     // fill matrix with unit roots
     for (int k = 0; k < n; k++) {
@@ -634,6 +646,44 @@ carray *cmatrix_dft(const carray *m, const COMPLEX_NORM norm) {
     cmatrix_free(o);
 
     return freq;
+}
+
+carray *cmatrix_idft(const carray *m, const COMPLEX_NORM norm) {
+    if (m == NULL) {
+        return NULL;
+    }
+
+    carray *m_conj = cmatrix_conj(m);
+    carray *result = NULL;
+
+    if (m_conj == NULL) {
+        return NULL;
+    }
+
+    switch (norm) {
+        case COMPLEX_NORM_ORTHO:
+            result = cmatrix_dft(m_conj, COMPLEX_NORM_ORTHO);
+            break;
+        case COMPLEX_NORM_FORWARD:
+            result = cmatrix_dft(m_conj, COMPLEX_NORM_BACKWARD);
+            break;
+        default:
+            result = cmatrix_dft(m_conj, COMPLEX_NORM_FORWARD);
+            break;
+    }
+
+    cmatrix_free(m_conj);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    // allows complex input on dft/fft
+    carray *result_conj = cmatrix_conj(result);
+
+    cmatrix_free(result);
+
+    return result_conj;
 }
 
 /*
@@ -755,9 +805,51 @@ carray *cmatrix_fft(const carray *data, const COMPLEX_NORM norm) {
     }
 
     // normalize fft signal with 1/sqrt(n) if norm is ortho
+    // normalize fft signal with 1/n if norm is forward
+    // otherwise return unmodified
     if (norm == COMPLEX_NORM_ORTHO) {
         cmatrix_muli_val(data_shuffled, 1/sqrt(data->rows));
+    } else if (norm == COMPLEX_NORM_FORWARD) {
+        cmatrix_muli_val(data_shuffled, (double) 1/data->rows);
     }
 
     return data_shuffled;
+}
+
+carray *cmatrix_ifft(const carray *data, const COMPLEX_NORM norm) {
+    if (data == NULL) {
+        return NULL;
+    }
+
+    carray *data_conj = cmatrix_conj(data);
+    carray *result = NULL;
+
+    if (data_conj == NULL) {
+        return NULL;
+    }
+
+    switch (norm) {
+        case COMPLEX_NORM_ORTHO:
+            result = cmatrix_fft(data_conj, COMPLEX_NORM_ORTHO);
+            break;
+        case COMPLEX_NORM_FORWARD:
+            result = cmatrix_fft(data_conj, COMPLEX_NORM_BACKWARD);
+            break;
+        default:
+            result = cmatrix_fft(data_conj, COMPLEX_NORM_FORWARD);
+            break;
+    }
+
+    cmatrix_free(data_conj);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    // allows complex input on dft/fft
+    carray *result_conj = cmatrix_conj(result);
+
+    cmatrix_free(result);
+
+    return result_conj;
 }

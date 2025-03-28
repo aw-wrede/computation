@@ -5,8 +5,9 @@
 #include <stdbool.h>
 
 #define COMPLEX_NORM int
-#define COMPLEX_NORM_UNSCALED 0
-#define COMPLEX_NORM_ORTHO 1
+#define COMPLEX_NORM_BACKWARD 0
+#define COMPLEX_NORM_FORWARD 1
+#define COMPLEX_NORM_ORTHO 2
 
 typedef struct {
     int rows, cols;
@@ -269,7 +270,8 @@ bool cmatrix_close_all(const carray *a, const carray *b, double rtol, double ato
 Creates the dft matrix with given dimension
 
 Input:
-    COMPLEX_NORM n: dimension of the dft matrix
+    int n: dimension of the dft matrix
+    COMPLEX_NORM norm: Normalization mode, default is backward (on inverse)
 
 Output:
     carray*: pointer to the created dft matrix of size n*n
@@ -290,11 +292,11 @@ Output:
 bool cmatrix_is_unitary(const carray *m, double rtol, double atol);
 
 /*
-Performs the Discrete Fourier Transform on on real values
+Performs the Discrete Fourier Transform
 
 Input:
-    carray *m: real data to be transformed
-    COMPLEX_NORM norm: Normalization mode, default is unscaled
+    carray *m: data to be transformed
+    COMPLEX_NORM norm: normalization mode, default is backward (on inverse)
 
 Output:
     carray*: pointer to the fourier transformed data
@@ -302,16 +304,41 @@ Output:
 carray *cmatrix_dft(const carray *m, COMPLEX_NORM norm);
 
 /*
-Performs the Fourier Transform on real values
+Performs the Inverse Fourier Transform on a complex numpy array
+
+Input:
+    carray *m: fourier transformed data
+    COMPLEX_NORM norm: normalization mode, default is backward (on inverse)
+
+Output:
+    carray*: inverse transformed data
+*/
+carray *cmatrix_idft(const carray *m, COMPLEX_NORM norm);
+
+/*
+Performs the Fourier Transform
 Is fastest when the input length is a power of two
 
 Input:
     carray *data: real data to be transformed
-    COMPLEX_NORM: Normalization mode
+    COMPLEX_NORM: Normalization mode, default is backward (on inverse)
 
 Output:
     carray*: pointer to the fourier transformed data
 */
 carray *cmatrix_fft(const carray *data, COMPLEX_NORM norm);
+
+/*
+Performs the Inverse Fourier Transform
+Is fastest when the input length is a power of two.
+
+Input:
+    carray *data: fourier transformed data
+    COMPLEX_NORM norm: normalization mode, default is backward (on inverse)
+
+Output:
+    carray*: inverse transformed data
+*/
+carray *cmatrix_ifft(const carray *data, COMPLEX_NORM norm);
 
 #endif //COMPLEX_H
