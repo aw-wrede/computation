@@ -43,7 +43,7 @@ def dft_matrix(n: int, norm: Literal['forward', 'backward', 'ortho'] = 'backward
 
 def dft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype: np.dtype = np.complex128) -> np.ndarray:
     """
-    Performs the Discrete Fourier Transform on a real numpy array
+    Performs the Discrete Fourier Transform on a real or complex numpy array
     :param data: Real data to be transformed
     :param norm: Normalization mode, default is backward (on inverse)
     :param dtype: Data type of the fourier transformed data
@@ -67,12 +67,12 @@ def idft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'back
         """
 
     if norm == 'ortho':
-        return dft(data.conjugate(), norm=norm, dtype=dtype)
+        return dft(data.conjugate(), norm=norm, dtype=dtype).conjugate()
 
     if norm == 'forward':
-        return dft(data.conjugate(), norm='backward', dtype=dtype)
+        return dft(data.conjugate(), norm='backward', dtype=dtype).conjugate()
     else:
-        return dft(data.conjugate(), norm='forward', dtype=dtype)
+        return dft(data.conjugate(), norm='forward', dtype=dtype).conjugate()
 
 
 def bin_mirror(number: int, length: int) -> int:
@@ -114,7 +114,7 @@ def shuffle_bit_reversed_order(data: np.ndarray) -> np.ndarray:
 
 def fft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'backward', dtype:np.dtype = np.complex128) -> np.ndarray:
     """
-    Performs the Fourier Transform on a real numpy array. Is fastest when the input length is a power of two.
+    Performs the Fourier Transform on a real or complex numpy array. Is fastest when the input length is a power of two.
     :param data: Real data to be transformed
     :param norm: Normalization mode, default is backward (on inverse)
     :param dtype: Data type of the fourier transformed data
@@ -183,9 +183,9 @@ def ifft(data: np.ndarray, norm: Literal['forward', 'backward', 'ortho'] = 'back
     :return: Inverse transformed data
     """
     if norm == 'ortho':
-        return fft(data.conjugate(), norm=norm, dtype=dtype)
+        return fft(data.conjugate(), norm=norm, dtype=dtype).conjugate()
 
     if norm == 'forward':
-        return fft(data.conjugate(), norm='backward', dtype=dtype)
+        return fft(data.conjugate(), norm='backward', dtype=dtype).conjugate()
     else:
-        return fft(data.conjugate(), norm='forward', dtype=dtype)
+        return fft(data.conjugate(), norm='forward', dtype=dtype).conjugate()
