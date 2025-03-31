@@ -36,6 +36,38 @@ void carray_dot_general(const carray *result, const carray *a, const carray *b) 
 
 
 /*
+Splits the matrix into 4 partitions
+
+Input:
+    carray *a: pointer to the matrix from which the partitions are created
+    carray **a11: upper left partition
+    carray **a12: upper right partition
+    carray **a21: bottom left partition
+    carray **a22: bottom right partition
+
+Output:
+    None, but the 4 partitions are stored in input pointers
+*/
+int carray_get_partitions(const carray *a, carray **a11, carray **a12, carray **a21, carray **a22) {
+    carray_get_partition(a11, a, 0, a->rows / 2, 0, a->cols / 2);
+    carray_get_partition(a12, a, 0, a->rows / 2, a->cols / 2, a->cols);
+    carray_get_partition(a21, a, a->rows / 2, a->rows, 0, a->cols / 2);
+    carray_get_partition(a22, a, a->rows / 2, a->rows, a->cols / 2, a->cols);
+
+    if (*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
+        // free possibly created matrices
+        carray_free(*a11);
+        carray_free(*a12);
+        carray_free(*a21);
+        carray_free(*a22);
+        return 0;
+    }
+
+    return 1;
+}
+
+
+/*
 Inserts the given partition into the matrix
 
 Input:
@@ -79,6 +111,148 @@ void carray_from_partitions(const carray *dest, const carray *a11, const carray 
     carray_apply_partition(dest, a12, 0, n / 2);
     carray_apply_partition(dest, a21, n / 2, 0);
     carray_apply_partition(dest, a22, n / 2, n / 2);
+}
+
+
+/*
+Calculates the dot product of two quadratic matrices with even dimension
+
+Input:
+    carray *result: pointer to a matrix to store the result
+    carray *a: a pointer to a matrix
+    carray *b: a pointer to a matrix
+
+Output:
+    None, but the result is stored in *result
+*/
+int carray_dot_quadratic(const carray *result, const carray *a, const carray *b) {
+    //TODO Think about better solution to free matrices if errors occur
+
+    carray *a11 = NULL, *a12 = NULL, *a21 = NULL, *a22 = NULL;
+    carray *b11 = NULL, *b12 = NULL, *b21 = NULL, *b22 = NULL;
+
+    // check if partitions created successfully
+    if (!carray_get_partitions(a, &a11, &a12, &a21, &a22) || !carray_get_partitions(b, &b11, &b12, &b21, &b22)) {
+        return 0;
+    }
+
+    // intermediate steps
+    carray *m1_a = carray_add(a11, a22), *m1_b = carray_add(b11, b22);
+    carray *m2_a = carray_add(a21, a22);
+    carray *m3_b = carray_sub(b12, b22);
+    carray *m4_b = carray_sub(b21, b11);
+    carray *m5_a = carray_add(a11, a12);
+    carray *m6_a = carray_sub(a21, a11), *m6_b = carray_add(b11, b12);
+    carray *m7_a = carray_sub(a12, a22), *m7_b = carray_add(b21, b22);
+
+    // check for successful matrix operations
+    if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
+        m6_b == NULL || m7_a == NULL || m7_b == NULL) {
+        carray_free(a11);
+        carray_free(a12);
+        carray_free(a21);
+        carray_free(a22);
+
+        carray_free(b11);
+        carray_free(b12);
+        carray_free(b21);
+        carray_free(b22);
+
+        carray_free(m1_a);
+        carray_free(m1_b);
+        carray_free(m2_a);
+        carray_free(m3_b);
+        carray_free(m4_b);
+        carray_free(m5_a);
+        carray_free(m6_a);
+        carray_free(m6_b);
+        carray_free(m7_a);
+        carray_free(m7_b);
+
+        return 0;
+    }
+
+    carray *m1 = carray_dot(m1_a, m1_b);
+    carray *m2 = carray_dot(m2_a, b11);
+    carray *m3 = carray_dot(a11, m3_b);
+    carray *m4 = carray_dot(a22, m4_b);
+    carray *m5 = carray_dot(m5_a, b22);
+    carray *m6 = carray_dot(m6_a, m6_b);
+    carray *m7 = carray_dot(m7_a, m7_b);
+
+    // free up memory that is no longer required
+    carray_free(a11);
+    carray_free(a12);
+    carray_free(a21);
+    carray_free(a22);
+
+    carray_free(b11);
+    carray_free(b12);
+    carray_free(b21);
+    carray_free(b22);
+
+    carray_free(m1_a);
+    carray_free(m1_b);
+    carray_free(m2_a);
+    carray_free(m3_b);
+    carray_free(m4_b);
+    carray_free(m5_a);
+    carray_free(m6_a);
+    carray_free(m6_b);
+    carray_free(m7_a);
+    carray_free(m7_b);
+
+    // check for successful matrix operations
+    if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
+        carray_free(m1);
+        carray_free(m2);
+        carray_free(m3);
+        carray_free(m4);
+        carray_free(m5);
+        carray_free(m6);
+        carray_free(m7);
+        return 0;
+    }
+
+    // calculate final partitions
+    carray *c11 = carray_add(m1, m4);
+    carray_subi(c11, m5);
+    carray_addi(c11, m7);
+
+    carray *c12 = carray_add(m3, m5);
+
+    carray *c21 = carray_add(m2, m4);
+
+    carray *c22 = carray_sub(m1, m2);
+    carray_addi(c22, m3);
+    carray_addi(c22, m6);
+
+    // free up memory that is no longer required
+    carray_free(m1);
+    carray_free(m2);
+    carray_free(m3);
+    carray_free(m4);
+    carray_free(m5);
+    carray_free(m6);
+    carray_free(m7);
+
+    // check for successful matrix operations
+    if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
+        carray_free(c11);
+        carray_free(c12);
+        carray_free(c21);
+        carray_free(c22);
+        return 0;
+    }
+
+    carray_from_partitions(result, c11, c12, c21, c22);
+
+    carray_free(c11);
+    carray_free(c12);
+    carray_free(c21);
+    carray_free(c22);
+
+    return 1;
 }
 
 
@@ -433,183 +607,6 @@ void carray_get_partition(carray **dest, const carray *m, const int row_start, c
     }
 }
 
-
-/** PRIVATE FUNCTIONS **/
-
-/*
-Splits the matrix into 4 partitions
-
-Input:
-    carray *a: pointer to the matrix from which the partitions are created
-    carray **a11: upper left partition
-    carray **a12: upper right partition
-    carray **a21: bottom left partition
-    carray **a22: bottom right partition
-
-Output:
-    None, but the 4 partitions are stored in input pointers
-*/
-int carray_get_partitions(const carray *a, carray **a11, carray **a12, carray **a21, carray **a22) {
-    carray_get_partition(a11, a, 0, a->rows / 2, 0, a->cols / 2);
-    carray_get_partition(a12, a, 0, a->rows / 2, a->cols / 2, a->cols);
-    carray_get_partition(a21, a, a->rows / 2, a->rows, 0, a->cols / 2);
-    carray_get_partition(a22, a, a->rows / 2, a->rows, a->cols / 2, a->cols);
-
-    if (*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
-        // free possibly created matrices
-        carray_free(*a11);
-        carray_free(*a12);
-        carray_free(*a21);
-        carray_free(*a22);
-        return 0;
-    }
-
-    return 1;
-}
-
-
-/*
-Calculates the dot product of two quadratic matrices with even dimension
-
-Input:
-    carray *result: pointer to a matrix to store the result
-    carray *a: a pointer to a matrix
-    carray *b: a pointer to a matrix
-
-Output:
-    None, but the result is stored in *result
-*/
-int carray_dot_quadratic(const carray *result, const carray *a, const carray *b) {
-    //TODO Think about better solution to free matrices if errors occur
-
-    carray *a11 = NULL, *a12 = NULL, *a21 = NULL, *a22 = NULL;
-    carray *b11 = NULL, *b12 = NULL, *b21 = NULL, *b22 = NULL;
-
-    // check if partitions created successfully
-    if (!carray_get_partitions(a, &a11, &a12, &a21, &a22) || !carray_get_partitions(b, &b11, &b12, &b21, &b22)) {
-        return 0;
-    }
-
-    // intermediate steps
-    carray *m1_a = carray_add(a11, a22), *m1_b = carray_add(b11, b22);
-    carray *m2_a = carray_add(a21, a22);
-    carray *m3_b = carray_sub(b12, b22);
-    carray *m4_b = carray_sub(b21, b11);
-    carray *m5_a = carray_add(a11, a12);
-    carray *m6_a = carray_sub(a21, a11), *m6_b = carray_add(b11, b12);
-    carray *m7_a = carray_sub(a12, a22), *m7_b = carray_add(b21, b22);
-
-    // check for successful matrix operations
-    if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
-        m6_b == NULL || m7_a == NULL || m7_b == NULL) {
-        carray_free(a11);
-        carray_free(a12);
-        carray_free(a21);
-        carray_free(a22);
-
-        carray_free(b11);
-        carray_free(b12);
-        carray_free(b21);
-        carray_free(b22);
-
-        carray_free(m1_a);
-        carray_free(m1_b);
-        carray_free(m2_a);
-        carray_free(m3_b);
-        carray_free(m4_b);
-        carray_free(m5_a);
-        carray_free(m6_a);
-        carray_free(m6_b);
-        carray_free(m7_a);
-        carray_free(m7_b);
-
-        return 0;
-    }
-
-    carray *m1 = carray_dot(m1_a, m1_b);
-    carray *m2 = carray_dot(m2_a, b11);
-    carray *m3 = carray_dot(a11, m3_b);
-    carray *m4 = carray_dot(a22, m4_b);
-    carray *m5 = carray_dot(m5_a, b22);
-    carray *m6 = carray_dot(m6_a, m6_b);
-    carray *m7 = carray_dot(m7_a, m7_b);
-
-    // free up memory that is no longer required
-    carray_free(a11);
-    carray_free(a12);
-    carray_free(a21);
-    carray_free(a22);
-
-    carray_free(b11);
-    carray_free(b12);
-    carray_free(b21);
-    carray_free(b22);
-
-    carray_free(m1_a);
-    carray_free(m1_b);
-    carray_free(m2_a);
-    carray_free(m3_b);
-    carray_free(m4_b);
-    carray_free(m5_a);
-    carray_free(m6_a);
-    carray_free(m6_b);
-    carray_free(m7_a);
-    carray_free(m7_b);
-
-    // check for successful matrix operations
-    if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
-        carray_free(m1);
-        carray_free(m2);
-        carray_free(m3);
-        carray_free(m4);
-        carray_free(m5);
-        carray_free(m6);
-        carray_free(m7);
-        return 0;
-    }
-
-    // calculate final partitions
-    carray *c11 = carray_add(m1, m4);
-    carray_subi(c11, m5);
-    carray_addi(c11, m7);
-
-    carray *c12 = carray_add(m3, m5);
-
-    carray *c21 = carray_add(m2, m4);
-
-    carray *c22 = carray_sub(m1, m2);
-    carray_addi(c22, m3);
-    carray_addi(c22, m6);
-
-    // free up memory that is no longer required
-    carray_free(m1);
-    carray_free(m2);
-    carray_free(m3);
-    carray_free(m4);
-    carray_free(m5);
-    carray_free(m6);
-    carray_free(m7);
-
-    // check for successful matrix operations
-    if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
-        carray_free(c11);
-        carray_free(c12);
-        carray_free(c21);
-        carray_free(c22);
-        return 0;
-    }
-
-    carray_from_partitions(result, c11, c12, c21, c22);
-
-    carray_free(c11);
-    carray_free(c12);
-    carray_free(c21);
-    carray_free(c22);
-
-    return 1;
-}
-
-/** END PRIVATE FUNCTIONS **/
 
 carray * carray_dot(const carray *a, const carray *b) {
     // TODO Think about (required for linalg back substitution)
