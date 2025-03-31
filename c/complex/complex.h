@@ -23,7 +23,7 @@ Input:
 Output:
     None
 */
-void cmatrix_free(carray *m);
+void carray_free(carray *m);
 
 /*
 Prints the given matrix to console
@@ -34,7 +34,7 @@ Input:
 Output:
     None, but the matrix is displayed in the console
 */
-void cmatrix_print(const carray *m);
+void carray_print(const carray *m);
 
 /*
 Prints the given matrix to console with given precision
@@ -46,7 +46,7 @@ Input:
 Output:
     None, but the matrix is displayed in the console with given decimal precision
 */
-void cmatrix_print_precision(const carray *m, int precision);
+void carray_print_precision(const carray *m, int precision);
 
 /*
 Creates a new complex matrix with given dimension (rows x cols) with value zero in each element
@@ -58,7 +58,7 @@ Input:
 Output:
     carray*: pointer to the created complex matrix with given dimensions and value zero in each element
 */
-carray *cmatrix_zeroes(int rows, int cols);
+carray *carray_zeroes(int rows, int cols);
 
 /*
 Creates a new complex matrix with one on diagonal elements and zero elsewhere
@@ -69,7 +69,7 @@ Input:
 Output:
     carray*: pointer to the created identity matrix
 */
-carray *cmatrix_identity(int n);
+carray *carray_identity(int n);
 
 /*
 Creates a copy of the complex matrix
@@ -80,7 +80,7 @@ Input:
 Output:
     carray*: pointer to the copy of the input matrix
 */
-carray *cmatrix_copy(const carray *m);
+carray *carray_copy(const carray *m);
 
 /*
 Creates the transposed of the given complex matrix
@@ -91,7 +91,7 @@ Input:
 Output:
     carray*: pointer to the transposed
 */
-carray *cmatrix_transposed(const carray *m);
+carray *carray_transposed(const carray *m);
 
 /*
 Creates the complex-conjugate of the given matrix
@@ -102,7 +102,7 @@ Input:
 Output:
     carray*: pointer to the complex-conjugate
 */
-carray * cmatrix_conj(const carray *m);
+carray * carray_conj(const carray *m);
 
 /*
 Creates the adjoint (conjugate transpose) of the given matrix
@@ -113,7 +113,7 @@ Input:
 Output:
     carray*: pointer to the adjoint
 */
-carray *cmatrix_adjoint(const carray *m);
+carray *carray_adjoint(const carray *m);
 
 /*
 Adds the value b to the complex matrix a
@@ -125,7 +125,7 @@ Input:
 Output:
     None, but the matrix a is the result of the addition
 */
-void cmatrix_addi_val(const carray *a, double complex b);
+void carray_addi_val(const carray *a, double complex b);
 
 /*
 Calculates the result of the complex matrix a, to which value b is added
@@ -137,7 +137,7 @@ Input:
 Output:
     carray*: pointer to the result of the addition of matrix a and value b
 */
-carray *cmatrix_add_val(const carray *a, double complex b);
+carray *carray_add_val(const carray *a, double complex b);
 
 /*
 Adds the second matrix b to the first matrix a
@@ -149,7 +149,7 @@ Input:
 Output:
     None, but the matrix a is the result of the matrix addition of a and b
 */
-void cmatrix_addi(const carray *a, const carray *b);
+void carray_addi(const carray *a, const carray *b);
 
 /*
 Calculates the complex matrix addition of a and b
@@ -161,7 +161,7 @@ Input:
 Output:
     carray*: pointer to the result of the matrix addition of a and b
 */
-carray *cmatrix_add(const carray *a, const carray *b);
+carray *carray_add(const carray *a, const carray *b);
 
 /*
 Subtracts the second matrix b from the first matrix a
@@ -173,7 +173,7 @@ Input:
 Output:
     None, but the matrix a is the result of the matrix subtraction of a and b
 */
-void cmatrix_subi(const carray *a, const carray *b);
+void carray_subi(const carray *a, const carray *b);
 
 /*
 Calculates the complex matrix subtraction of a and b
@@ -185,7 +185,7 @@ Input:
 Output:
     carray*: pointer to the result of the matrix addition of a and b
 */
-carray *cmatrix_sub(const carray *a, const carray *b);
+carray *carray_sub(const carray *a, const carray *b);
 
 /*
 Multiples each element of the complex matrix a with b
@@ -197,7 +197,7 @@ Input:
 Output:
     None, but the matrix a is the result of the multiplication
 */
-void cmatrix_muli_val(const carray *a, double complex b);
+void carray_muli_val(const carray *a, double complex b);
 
 /*
 Multiples each element of matrix a with b
@@ -209,7 +209,7 @@ Input:
 Output:
     carray*: pointer to the matrix containing the result of the multiplication
 */
-carray *cmatrix_mul_val(const carray *a, double complex b);
+carray *carray_mul_val(const carray *a, double complex b);
 
 /*
 Creates a partition or sub-area of the given matrix
@@ -224,7 +224,7 @@ Input:
 Output:
     None, but the given pointer dest contains the pointer in which the new matrix partition pointer is to be saved
 */
-void cmatrix_get_partition(carray **dest, const carray *m, int row_start, int row_end, int col_start, int col_end);
+void carray_get_partition(carray **dest, const carray *m, int row_start, int row_end, int col_start, int col_end);
 
 /*
 Calculates the dot product of two matrices
@@ -236,7 +236,7 @@ Input:
 Output:
     carray*: pointer to the result of the matrix dot product a*b
 */
-carray *cmatrix_dot(const carray *a, const carray *b);
+carray *carray_dot(const carray *a, const carray *b);
 
 /*
 Checks whether the individual elements of both matrices are close to each other and returns the result per element
@@ -250,7 +250,7 @@ Input:
 Output:
     carray*: matrix containing the result of each element
 */
-carray *cmatrix_close(const carray *a, const carray *b, double rtol, double atol);
+carray *carray_close(const carray *a, const carray *b, double rtol, double atol);
 
 /*
 Checks whether the individual elements of both matrices are close to each other
@@ -264,7 +264,7 @@ Input:
 Output:
     bool: result of whether the matrices are close to each other
 */
-bool cmatrix_close_all(const carray *a, const carray *b, double rtol, double atol);
+bool carray_close_all(const carray *a, const carray *b, double rtol, double atol);
 
 /*
 Creates the dft matrix with given dimension
@@ -276,7 +276,7 @@ Input:
 Output:
     carray*: pointer to the created dft matrix of size n*n
 */
-carray *dft_matrix(int n, COMPLEX_NORM norm);
+carray *carray_dft_matrix(int n, COMPLEX_NORM norm);
 
 /*
 Checks if a matrix is unitary
@@ -289,7 +289,7 @@ Input:
 Output:
     bool: whether the matrix is unitary
 */
-bool cmatrix_is_unitary(const carray *m, double rtol, double atol);
+bool carray_is_unitary(const carray *m, double rtol, double atol);
 
 /*
 Performs the Discrete Fourier Transform
@@ -301,7 +301,7 @@ Input:
 Output:
     carray*: pointer to the fourier transformed data
 */
-carray *cmatrix_dft(const carray *m, COMPLEX_NORM norm);
+carray *carray_dft(const carray *m, COMPLEX_NORM norm);
 
 /*
 Performs the Inverse Fourier Transform on a complex numpy array
@@ -313,7 +313,7 @@ Input:
 Output:
     carray*: inverse transformed data
 */
-carray *cmatrix_idft(const carray *m, COMPLEX_NORM norm);
+carray *carray_idft(const carray *m, COMPLEX_NORM norm);
 
 /*
 Performs the Fourier Transform
@@ -326,7 +326,7 @@ Input:
 Output:
     carray*: pointer to the fourier transformed data
 */
-carray *cmatrix_fft(const carray *data, COMPLEX_NORM norm);
+carray *carray_fft(const carray *data, COMPLEX_NORM norm);
 
 /*
 Performs the Inverse Fourier Transform
@@ -339,6 +339,6 @@ Input:
 Output:
     carray*: inverse transformed data
 */
-carray *cmatrix_ifft(const carray *data, COMPLEX_NORM norm);
+carray *carray_ifft(const carray *data, COMPLEX_NORM norm);
 
 #endif //COMPLEX_H

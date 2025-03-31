@@ -5,9 +5,148 @@
 #include <stdio.h>
 #include <string.h>
 
-//TODO Think about combining matrix and complex with dtype property in marray
+/** PRIVATE FUNCTIONS **/
 
-void cmatrix_free(carray *m) {
+/*
+Performs the dot multiplication with the general method
+
+Input:
+    carray *result: pointer to a matrix to store the result
+    carray *a: a pointer to a matrix
+    carray *b: a pointer to a matrix
+
+Output:
+    None, but the result is stored in *result
+*/
+void carray_dot_general(const carray *result, const carray *a, const carray *b) {
+    for (int i = 0; i < a->rows; i++) {
+        const int row = i * a->cols;
+
+        for (int j = 0; j < b->cols; j++) {
+            double complex val = 0;
+
+            for (int k = 0; k < a->cols; k++) {
+                val += a->data[row + k] * b->data[k * b->cols + j];
+            }
+
+            result->data[i * result->cols + j] = val;
+        }
+    }
+}
+
+
+/*
+Inserts the given partition into the matrix
+
+Input:
+    carray *dest: destination matrix
+    carray *m: partition matrix that is applied
+    int row: start row
+    int col: start col
+
+Output:
+    None, but the partition is applied to the target matrix
+*/
+void carray_apply_partition(const carray *dest, const carray *m, const int row, const int col) {
+    for (int i = 0; i < m->rows; i++) {
+        const int dest_offset = (i + row) * dest->cols + col;
+        const int src_row = i * m->cols;
+
+        for (int j = 0; j < m->cols; j++) {
+            dest->data[dest_offset + j] = m->data[src_row + j];
+        }
+    }
+}
+
+
+/*
+Inserts all 4 partitions into the destination matrix
+
+Input:
+    carray *dest: destination matrix
+    carray **a11: upper left partition
+    carray **a12: upper right partition
+    carray **a21: bottom left partition
+    carray **a22: bottom right partition
+
+Output:
+    None, but the destination matrix is the combination of all 4 partitions
+*/
+void carray_from_partitions(const carray *dest, const carray *a11, const carray *a12, const carray *a21, const carray *a22) {
+    const int n = dest->rows;
+
+    carray_apply_partition(dest, a11, 0, 0);
+    carray_apply_partition(dest, a12, 0, n / 2);
+    carray_apply_partition(dest, a21, n / 2, 0);
+    carray_apply_partition(dest, a22, n / 2, n / 2);
+}
+
+
+/** matrix fft functions **/
+
+/*
+Mirrors a binary number with fixed length
+
+Input:
+    int number: number from which the binary representation is to be mirrored
+    int length: fixed number of bits that are set during mirroring
+
+Output:
+    int: mirrored number
+*/
+int carray_bin_mirror(const int number, const int length) {
+    if (number == 0) {
+        return 0;
+    }
+
+    int binary[length];
+
+    // get binary representation of number (inverted)
+    for (int i = 0; i < length; i++) {
+        binary[i] = (number >> i) & 1;
+    }
+
+    int number_mirrored = 0;
+    for (int i = 0; i < length; i++) {
+        number_mirrored = (number_mirrored << 1) | binary[i];
+    }
+
+    return number_mirrored;
+}
+
+
+/*
+Shuffles the elements of data using bit-reversal of list index.
+
+Input:
+    carray *data: data to be shuffled
+
+Output:
+    carray: Shuffled data array
+*/
+carray *carray_shuffle_bit_reversed_order(const carray *data) {
+    // calculate bits required to store the largest index
+    // a.e. 0001 -> 1000, filling zeroes are needed for mirroring
+    const int bit_length = (int)log2(data->rows);
+
+    carray *shuffled_data = carray_zeroes(data->rows, 1);
+
+    // mirror every index and put entry to this position
+    for (int i = 0; i < data->rows; i++) {
+        const int i_mirrored = carray_bin_mirror(i, bit_length);
+        shuffled_data->data[i_mirrored] = data->data[i];
+    }
+
+    return shuffled_data;
+}
+
+
+/* ========================================================================================= */
+
+
+/** PUBLIC HEADER FUNCTIONS **/
+
+void carray_free(carray *m) {
     if (m == NULL) {
         return;
     }
@@ -15,7 +154,10 @@ void cmatrix_free(carray *m) {
     free(m);
 }
 
-void cmatrix_print(const carray *m) {
+
+/** matrix print functions **/
+
+void carray_print(const carray *m) {
     if (m == NULL) {
         return;
     }
@@ -32,7 +174,8 @@ void cmatrix_print(const carray *m) {
     }
 }
 
-void cmatrix_print_precision(const carray *m, const int precision) {
+
+void carray_print_precision(const carray *m, const int precision) {
     if (m == NULL) {
         return;
     }
@@ -49,7 +192,10 @@ void cmatrix_print_precision(const carray *m, const int precision) {
     }
 }
 
-carray *cmatrix_zeroes(const int rows, const int cols) {
+
+/** matrix initialize functions **/
+
+carray *carray_zeroes(const int rows, const int cols) {
     // alloc mem for structure and data
     // calloc sets the entire memory area to 0
     carray *m = calloc(sizeof(carray) + rows * cols * sizeof(double complex), 1);
@@ -69,8 +215,9 @@ carray *cmatrix_zeroes(const int rows, const int cols) {
     return m;
 }
 
-carray *cmatrix_identity(const int n) {
-    carray *m = cmatrix_zeroes(n, n);
+
+carray *carray_identity(const int n) {
+    carray *m = carray_zeroes(n, n);
 
     if (m == NULL) {
         return NULL;
@@ -83,8 +230,9 @@ carray *cmatrix_identity(const int n) {
     return m;
 }
 
-carray *cmatrix_copy(const carray *m) {
-    carray *copy = cmatrix_zeroes(m->rows, m->cols);
+
+carray *carray_copy(const carray *m) {
+    carray *copy = carray_zeroes(m->rows, m->cols);
 
     if (copy == NULL) {
         return NULL;
@@ -95,8 +243,9 @@ carray *cmatrix_copy(const carray *m) {
     return copy;
 }
 
-carray *cmatrix_transposed(const carray *m) {
-    carray *t = cmatrix_zeroes(m->cols, m->rows);
+
+carray *carray_transposed(const carray *m) {
+    carray *t = carray_zeroes(m->cols, m->rows);
 
     if (t == NULL) {
         return NULL;
@@ -113,8 +262,9 @@ carray *cmatrix_transposed(const carray *m) {
     return t;
 }
 
-carray * cmatrix_conj(const carray *m) {
-    carray *c = cmatrix_zeroes(m->rows, m->cols);
+
+carray * carray_conj(const carray *m) {
+    carray *c = carray_zeroes(m->rows, m->cols);
 
     if (c == NULL) {
         return NULL;
@@ -131,8 +281,9 @@ carray * cmatrix_conj(const carray *m) {
     return c;
 }
 
-carray *cmatrix_adjoint(const carray *m) {
-    carray *t = cmatrix_zeroes(m->cols, m->rows);
+
+carray *carray_adjoint(const carray *m) {
+    carray *t = carray_zeroes(m->cols, m->rows);
 
     if (t == NULL) {
         return NULL;
@@ -149,7 +300,10 @@ carray *cmatrix_adjoint(const carray *m) {
     return t;
 }
 
-void cmatrix_addi_val(const carray *a, const double complex b) {
+
+/** matrix calculation functions **/
+
+void carray_addi_val(const carray *a, const double complex b) {
     const int elems = a->rows * a->cols;
 
     for (int i = 0; i < elems; i++) {
@@ -157,8 +311,8 @@ void cmatrix_addi_val(const carray *a, const double complex b) {
     }
 }
 
-carray * cmatrix_add_val(const carray *a, const double complex b) {
-    carray *result = cmatrix_zeroes(a->rows, a->cols);
+carray * carray_add_val(const carray *a, const double complex b) {
+    carray *result = carray_zeroes(a->rows, a->cols);
 
     if (result == NULL) {
         return NULL;
@@ -168,12 +322,12 @@ carray * cmatrix_add_val(const carray *a, const double complex b) {
     memcpy(result->data, a->data, sizeof(double complex) * a->rows * a->cols);
 
     // add b to result matrix
-    cmatrix_addi_val(result, b);
+    carray_addi_val(result, b);
 
     return result;
 }
 
-void cmatrix_addi(const carray *a, const carray *b) {
+void carray_addi(const carray *a, const carray *b) {
     // Check dimensions
     if (a->rows != b->rows || a->cols != b->cols) {
         return;
@@ -186,13 +340,13 @@ void cmatrix_addi(const carray *a, const carray *b) {
     }
 }
 
-carray * cmatrix_add(const carray *a, const carray *b) {
+carray * carray_add(const carray *a, const carray *b) {
     // Check dimensions
     if (a->rows != b->rows || a->cols != b->cols) {
         return NULL;
     }
 
-    carray *m = cmatrix_zeroes(a->rows, a->cols);
+    carray *m = carray_zeroes(a->rows, a->cols);
 
     if (m == NULL) {
         return NULL;
@@ -207,7 +361,7 @@ carray * cmatrix_add(const carray *a, const carray *b) {
     return m;
 }
 
-void cmatrix_subi(const carray *a, const carray *b) {
+void carray_subi(const carray *a, const carray *b) {
     // Check dimensions
     if (a->rows != b->rows || a->cols != b->cols) {
         return;
@@ -220,12 +374,12 @@ void cmatrix_subi(const carray *a, const carray *b) {
     }
 }
 
-carray * cmatrix_sub(const carray *a, const carray *b) {
+carray * carray_sub(const carray *a, const carray *b) {
     if (a->rows != b->rows || a->cols != b->cols) {
         return NULL;
     }
 
-    carray *m = cmatrix_zeroes(a->rows, a->cols);
+    carray *m = carray_zeroes(a->rows, a->cols);
 
     if (m == NULL) {
         return NULL;
@@ -240,7 +394,7 @@ carray * cmatrix_sub(const carray *a, const carray *b) {
     return m;
 }
 
-void cmatrix_muli_val(const carray *a, const double complex b) {
+void carray_muli_val(const carray *a, const double complex b) {
     const int elems = a->rows * a->cols;
 
     for (int i = 0; i < elems; i++) {
@@ -248,8 +402,8 @@ void cmatrix_muli_val(const carray *a, const double complex b) {
     }
 }
 
-carray * cmatrix_mul_val(const carray *a, const double complex b) {
-    carray *result = cmatrix_zeroes(a->rows, a->cols);
+carray * carray_mul_val(const carray *a, const double complex b) {
+    carray *result = carray_zeroes(a->rows, a->cols);
 
     if (result == NULL) {
         return NULL;
@@ -264,25 +418,12 @@ carray * cmatrix_mul_val(const carray *a, const double complex b) {
     return result;
 }
 
-void cdot_general(const carray *result, const carray *a, const carray *b) {
-    for (int i = 0; i < a->rows; i++) {
-        const int row = i * a->cols;
 
-        for (int j = 0; j < b->cols; j++) {
-            double complex val = 0;
+/** matrix dot functions **/
 
-            for (int k = 0; k < a->cols; k++) {
-                val += a->data[row + k] * b->data[k * b->cols + j];
-            }
-
-            result->data[i * result->cols + j] = val;
-        }
-    }
-}
-
-void cmatrix_get_partition(carray **dest, const carray *m, const int row_start, const int row_end, const int col_start,
+void carray_get_partition(carray **dest, const carray *m, const int row_start, const int row_end, const int col_start,
     const int col_end) {
-    *dest = cmatrix_zeroes(row_end - row_start, col_end - col_start);
+    *dest = carray_zeroes(row_end - row_start, col_end - col_start);
 
     for (int i = 0; i < row_end - row_start; i++) {
         // dest: i-th row of p
@@ -292,186 +433,195 @@ void cmatrix_get_partition(carray **dest, const carray *m, const int row_start, 
     }
 }
 
-int cget_partitions(const carray *a, carray **a11, carray **a12, carray **a21, carray **a22) {
-    cmatrix_get_partition(a11, a, 0, a->rows / 2, 0, a->cols / 2);
-    cmatrix_get_partition(a12, a, 0, a->rows / 2, a->cols / 2, a->cols);
-    cmatrix_get_partition(a21, a, a->rows / 2, a->rows, 0, a->cols / 2);
-    cmatrix_get_partition(a22, a, a->rows / 2, a->rows, a->cols / 2, a->cols);
+
+/** PRIVATE FUNCTIONS **/
+
+/*
+Splits the matrix into 4 partitions
+
+Input:
+    carray *a: pointer to the matrix from which the partitions are created
+    carray **a11: upper left partition
+    carray **a12: upper right partition
+    carray **a21: bottom left partition
+    carray **a22: bottom right partition
+
+Output:
+    None, but the 4 partitions are stored in input pointers
+*/
+int carray_get_partitions(const carray *a, carray **a11, carray **a12, carray **a21, carray **a22) {
+    carray_get_partition(a11, a, 0, a->rows / 2, 0, a->cols / 2);
+    carray_get_partition(a12, a, 0, a->rows / 2, a->cols / 2, a->cols);
+    carray_get_partition(a21, a, a->rows / 2, a->rows, 0, a->cols / 2);
+    carray_get_partition(a22, a, a->rows / 2, a->rows, a->cols / 2, a->cols);
 
     if (*a11 == NULL || *a12 == NULL || *a21 == NULL || *a22 == NULL) {
         // free possibly created matrices
-        cmatrix_free(*a11);
-        cmatrix_free(*a12);
-        cmatrix_free(*a21);
-        cmatrix_free(*a22);
+        carray_free(*a11);
+        carray_free(*a12);
+        carray_free(*a21);
+        carray_free(*a22);
         return 0;
     }
 
     return 1;
 }
 
-void capply_partition(const carray *dest, const carray *m, const int row, const int col) {
-    for (int i = 0; i < m->rows; i++) {
-        const int dest_offset = (i + row) * dest->cols + col;
-        const int src_row = i * m->cols;
 
-        for (int j = 0; j < m->cols; j++) {
-            dest->data[dest_offset + j] = m->data[src_row + j];
-        }
-    }
-}
+/*
+Calculates the dot product of two quadratic matrices with even dimension
 
-void cfrom_partitions(const carray *dest, const carray *a11, const carray *a12, const carray *a21, const carray *a22) {
-    const int n = dest->rows;
+Input:
+    carray *result: pointer to a matrix to store the result
+    carray *a: a pointer to a matrix
+    carray *b: a pointer to a matrix
 
-    capply_partition(dest, a11, 0, 0);
-    capply_partition(dest, a12, 0, n / 2);
-    capply_partition(dest, a21, n / 2, 0);
-    capply_partition(dest, a22, n / 2, n / 2);
-}
-
-int cdot_quadratic(const carray *result, const carray *a, const carray *b) {
+Output:
+    None, but the result is stored in *result
+*/
+int carray_dot_quadratic(const carray *result, const carray *a, const carray *b) {
     //TODO Think about better solution to free matrices if errors occur
 
     carray *a11 = NULL, *a12 = NULL, *a21 = NULL, *a22 = NULL;
     carray *b11 = NULL, *b12 = NULL, *b21 = NULL, *b22 = NULL;
 
     // check if partitions created successfully
-    if (!cget_partitions(a, &a11, &a12, &a21, &a22) || !cget_partitions(b, &b11, &b12, &b21, &b22)) {
+    if (!carray_get_partitions(a, &a11, &a12, &a21, &a22) || !carray_get_partitions(b, &b11, &b12, &b21, &b22)) {
         return 0;
     }
 
     // intermediate steps
-    carray *m1_a = cmatrix_add(a11, a22), *m1_b = cmatrix_add(b11, b22);
-    carray *m2_a = cmatrix_add(a21, a22);
-    carray *m3_b = cmatrix_sub(b12, b22);
-    carray *m4_b = cmatrix_sub(b21, b11);
-    carray *m5_a = cmatrix_add(a11, a12);
-    carray *m6_a = cmatrix_sub(a21, a11), *m6_b = cmatrix_add(b11, b12);
-    carray *m7_a = cmatrix_sub(a12, a22), *m7_b = cmatrix_add(b21, b22);
+    carray *m1_a = carray_add(a11, a22), *m1_b = carray_add(b11, b22);
+    carray *m2_a = carray_add(a21, a22);
+    carray *m3_b = carray_sub(b12, b22);
+    carray *m4_b = carray_sub(b21, b11);
+    carray *m5_a = carray_add(a11, a12);
+    carray *m6_a = carray_sub(a21, a11), *m6_b = carray_add(b11, b12);
+    carray *m7_a = carray_sub(a12, a22), *m7_b = carray_add(b21, b22);
 
     // check for successful matrix operations
     if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
         m6_b == NULL || m7_a == NULL || m7_b == NULL) {
-        cmatrix_free(a11);
-        cmatrix_free(a12);
-        cmatrix_free(a21);
-        cmatrix_free(a22);
+        carray_free(a11);
+        carray_free(a12);
+        carray_free(a21);
+        carray_free(a22);
 
-        cmatrix_free(b11);
-        cmatrix_free(b12);
-        cmatrix_free(b21);
-        cmatrix_free(b22);
+        carray_free(b11);
+        carray_free(b12);
+        carray_free(b21);
+        carray_free(b22);
 
-        cmatrix_free(m1_a);
-        cmatrix_free(m1_b);
-        cmatrix_free(m2_a);
-        cmatrix_free(m3_b);
-        cmatrix_free(m4_b);
-        cmatrix_free(m5_a);
-        cmatrix_free(m6_a);
-        cmatrix_free(m6_b);
-        cmatrix_free(m7_a);
-        cmatrix_free(m7_b);
+        carray_free(m1_a);
+        carray_free(m1_b);
+        carray_free(m2_a);
+        carray_free(m3_b);
+        carray_free(m4_b);
+        carray_free(m5_a);
+        carray_free(m6_a);
+        carray_free(m6_b);
+        carray_free(m7_a);
+        carray_free(m7_b);
 
         return 0;
     }
 
-    carray *m1 = cmatrix_dot(m1_a, m1_b);
-    carray *m2 = cmatrix_dot(m2_a, b11);
-    carray *m3 = cmatrix_dot(a11, m3_b);
-    carray *m4 = cmatrix_dot(a22, m4_b);
-    carray *m5 = cmatrix_dot(m5_a, b22);
-    carray *m6 = cmatrix_dot(m6_a, m6_b);
-    carray *m7 = cmatrix_dot(m7_a, m7_b);
+    carray *m1 = carray_dot(m1_a, m1_b);
+    carray *m2 = carray_dot(m2_a, b11);
+    carray *m3 = carray_dot(a11, m3_b);
+    carray *m4 = carray_dot(a22, m4_b);
+    carray *m5 = carray_dot(m5_a, b22);
+    carray *m6 = carray_dot(m6_a, m6_b);
+    carray *m7 = carray_dot(m7_a, m7_b);
 
     // free up memory that is no longer required
-    cmatrix_free(a11);
-    cmatrix_free(a12);
-    cmatrix_free(a21);
-    cmatrix_free(a22);
+    carray_free(a11);
+    carray_free(a12);
+    carray_free(a21);
+    carray_free(a22);
 
-    cmatrix_free(b11);
-    cmatrix_free(b12);
-    cmatrix_free(b21);
-    cmatrix_free(b22);
+    carray_free(b11);
+    carray_free(b12);
+    carray_free(b21);
+    carray_free(b22);
 
-    cmatrix_free(m1_a);
-    cmatrix_free(m1_b);
-    cmatrix_free(m2_a);
-    cmatrix_free(m3_b);
-    cmatrix_free(m4_b);
-    cmatrix_free(m5_a);
-    cmatrix_free(m6_a);
-    cmatrix_free(m6_b);
-    cmatrix_free(m7_a);
-    cmatrix_free(m7_b);
+    carray_free(m1_a);
+    carray_free(m1_b);
+    carray_free(m2_a);
+    carray_free(m3_b);
+    carray_free(m4_b);
+    carray_free(m5_a);
+    carray_free(m6_a);
+    carray_free(m6_b);
+    carray_free(m7_a);
+    carray_free(m7_b);
 
     // check for successful matrix operations
     if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
-        cmatrix_free(m1);
-        cmatrix_free(m2);
-        cmatrix_free(m3);
-        cmatrix_free(m4);
-        cmatrix_free(m5);
-        cmatrix_free(m6);
-        cmatrix_free(m7);
+        carray_free(m1);
+        carray_free(m2);
+        carray_free(m3);
+        carray_free(m4);
+        carray_free(m5);
+        carray_free(m6);
+        carray_free(m7);
         return 0;
     }
 
     // calculate final partitions
-    carray *c11 = cmatrix_add(m1, m4);
-    cmatrix_subi(c11, m5);
-    cmatrix_addi(c11, m7);
+    carray *c11 = carray_add(m1, m4);
+    carray_subi(c11, m5);
+    carray_addi(c11, m7);
 
-    carray *c12 = cmatrix_add(m3, m5);
+    carray *c12 = carray_add(m3, m5);
 
-    carray *c21 = cmatrix_add(m2, m4);
+    carray *c21 = carray_add(m2, m4);
 
-    carray *c22 = cmatrix_sub(m1, m2);
-    cmatrix_addi(c22, m3);
-    cmatrix_addi(c22, m6);
+    carray *c22 = carray_sub(m1, m2);
+    carray_addi(c22, m3);
+    carray_addi(c22, m6);
 
     // free up memory that is no longer required
-    cmatrix_free(m1);
-    cmatrix_free(m2);
-    cmatrix_free(m3);
-    cmatrix_free(m4);
-    cmatrix_free(m5);
-    cmatrix_free(m6);
-    cmatrix_free(m7);
+    carray_free(m1);
+    carray_free(m2);
+    carray_free(m3);
+    carray_free(m4);
+    carray_free(m5);
+    carray_free(m6);
+    carray_free(m7);
 
     // check for successful matrix operations
     if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
-        cmatrix_free(c11);
-        cmatrix_free(c12);
-        cmatrix_free(c21);
-        cmatrix_free(c22);
+        carray_free(c11);
+        carray_free(c12);
+        carray_free(c21);
+        carray_free(c22);
         return 0;
     }
 
-    cfrom_partitions(result, c11, c12, c21, c22);
+    carray_from_partitions(result, c11, c12, c21, c22);
 
-    // check for successful matrix operations
-    cmatrix_free(c11);
-    cmatrix_free(c12);
-    cmatrix_free(c21);
-    cmatrix_free(c22);
+    carray_free(c11);
+    carray_free(c12);
+    carray_free(c21);
+    carray_free(c22);
 
     return 1;
 }
 
-carray * cmatrix_dot(const carray *a, const carray *b) {
+/** END PRIVATE FUNCTIONS **/
+
+carray * carray_dot(const carray *a, const carray *b) {
     // TODO Think about (required for linalg back substitution)
     if (a->rows == 0 || a->cols == 0 || b->rows == 0 || b->cols == 0) {
-        carray *m = cmatrix_zeroes(1, 1);
+        carray *m = carray_zeroes(1, 1);
         m->data[0] = 0;
 
         return m;
     }
 
     // alloc matrix to store result
-    carray *m = cmatrix_zeroes(a->rows, b->cols);
+    carray *m = carray_zeroes(a->rows, b->cols);
 
     if (m == NULL) {
         return NULL;
@@ -480,30 +630,33 @@ carray * cmatrix_dot(const carray *a, const carray *b) {
     // check if a and b are quadratic
     if (a->rows == b->rows && a->cols == b->cols && a->rows == a->cols) {
         if (a->cols % 2 == 0) {
-            if (cdot_quadratic(m, a, b)) {
+            if (carray_dot_quadratic(m, a, b)) {
                 return m;
             }
 
             // dot_quadratic was not successful -> free matrix and return false
-            cmatrix_free(m);
+            carray_free(m);
 
             return NULL;
         }
     }
 
-    cdot_general(m, a, b);
+    carray_dot_general(m, a, b);
 
     return m;
 }
 
-carray * cmatrix_close(const carray *a, const carray *b, const double rtol, const double atol) {
+
+/** matrix close functions **/
+
+carray * carray_close(const carray *a, const carray *b, const double rtol, const double atol) {
     // Check dimensions
     if (a->rows != b->rows || a->cols != b->cols) {
         return NULL;
     }
 
     // alloc matrix to store result
-    carray *results = cmatrix_zeroes(a->rows, a->cols);
+    carray *results = carray_zeroes(a->rows, a->cols);
 
     if (results == NULL) {
         return NULL;
@@ -519,7 +672,8 @@ carray * cmatrix_close(const carray *a, const carray *b, const double rtol, cons
     return results;
 }
 
-bool cmatrix_close_all(const carray *a, const carray *b, const double rtol, const double atol) {
+
+bool carray_close_all(const carray *a, const carray *b, const double rtol, const double atol) {
     // Check dimensions
     if (a->rows != b->rows || a->cols != b->cols) {
         return false;
@@ -537,8 +691,11 @@ bool cmatrix_close_all(const carray *a, const carray *b, const double rtol, cons
     return true;
 }
 
-carray *dft_matrix(const int n, const COMPLEX_NORM norm) {
-    carray *f = cmatrix_zeroes(n, n);
+
+/** matrix fft functions **/
+
+carray *carray_dft_matrix(const int n, const COMPLEX_NORM norm) {
+    carray *f = carray_zeroes(n, n);
 
     if (f == NULL) {
         return NULL;
@@ -548,11 +705,11 @@ carray *dft_matrix(const int n, const COMPLEX_NORM norm) {
     const double complex omega = cexp(-1 * I * 2 * M_PI / n);
 
     // calculate all different unit roots
-    carray *omegas = cmatrix_zeroes(1, n);
+    carray *omegas = carray_zeroes(1, n);
 
     if (omegas == NULL) {
         // free f if omegas matrix could not be created
-        cmatrix_free(f);
+        carray_free(f);
         return NULL;
     }
 
@@ -596,64 +753,64 @@ carray *dft_matrix(const int n, const COMPLEX_NORM norm) {
     }
 
     // free temp matrix
-    cmatrix_free(omegas);
+    carray_free(omegas);
 
     return f;
 }
 
-bool cmatrix_is_unitary(const carray *m, const double rtol, const double atol) {
+
+bool carray_is_unitary(const carray *m, const double rtol, const double atol) {
     // check if matrix is quadratic
     if (m->rows != m->cols) {
         return false;
     }
 
     // calculate the adjoint (conjugate transpose) of the matrix to calculate the dot product
-    carray *m_adj = cmatrix_adjoint(m);
-    carray *dot = cmatrix_dot(m, m_adj);
+    carray *m_adj = carray_adjoint(m);
+    carray *dot = carray_dot(m, m_adj);
 
-    cmatrix_free(m_adj);
+    carray_free(m_adj);
 
-    carray *unit = cmatrix_identity(m->rows);
+    carray *unit = carray_identity(m->rows);
 
     // the product of the matrix with its adjoint gives the unit matrix if the matrix is unitary
-    const bool result = cmatrix_close_all(dot, unit, rtol, atol);
+    const bool result = carray_close_all(dot, unit, rtol, atol);
 
     // free temp matrices
-    cmatrix_free(dot);
-    cmatrix_free(unit);
+    carray_free(dot);
+    carray_free(unit);
 
     return result;
 }
 
 
-/* FOURIER TRANSFORMATION */
-
-carray *cmatrix_dft(const carray *m, const COMPLEX_NORM norm) {
+carray *carray_dft(const carray *m, const COMPLEX_NORM norm) {
     if (m == NULL) {
         return NULL;
     }
 
     // compute Omega
-    carray *o = dft_matrix(m->rows, norm);
+    carray *o = carray_dft_matrix(m->rows, norm);
     if (o == NULL) {
         return NULL;
     }
 
     // perform discrete fourier transform (Omega * m)
-    carray *freq = cmatrix_dot(o, m);
+    carray *freq = carray_dot(o, m);
 
     // free temp matrix
-    cmatrix_free(o);
+    carray_free(o);
 
     return freq;
 }
 
-carray *cmatrix_idft(const carray *m, const COMPLEX_NORM norm) {
+
+carray *carray_idft(const carray *m, const COMPLEX_NORM norm) {
     if (m == NULL) {
         return NULL;
     }
 
-    carray *m_conj = cmatrix_conj(m);
+    carray *m_conj = carray_conj(m);
     carray *result = NULL;
 
     if (m_conj == NULL) {
@@ -662,86 +819,32 @@ carray *cmatrix_idft(const carray *m, const COMPLEX_NORM norm) {
 
     switch (norm) {
         case COMPLEX_NORM_ORTHO:
-            result = cmatrix_dft(m_conj, COMPLEX_NORM_ORTHO);
+            result = carray_dft(m_conj, COMPLEX_NORM_ORTHO);
             break;
         case COMPLEX_NORM_FORWARD:
-            result = cmatrix_dft(m_conj, COMPLEX_NORM_BACKWARD);
+            result = carray_dft(m_conj, COMPLEX_NORM_BACKWARD);
             break;
         default:
-            result = cmatrix_dft(m_conj, COMPLEX_NORM_FORWARD);
+            result = carray_dft(m_conj, COMPLEX_NORM_FORWARD);
             break;
     }
 
-    cmatrix_free(m_conj);
+    carray_free(m_conj);
 
     if (result == NULL) {
         return NULL;
     }
 
     // allows complex input on dft/fft
-    carray *result_conj = cmatrix_conj(result);
+    carray *result_conj = carray_conj(result);
 
-    cmatrix_free(result);
+    carray_free(result);
 
     return result_conj;
 }
 
-/*
-Mirrors a binary number with fixed length
 
-Input:
-    int number: number from which the binary representation is to be mirrored
-    int length: fixed number of bits that are set during mirroring
-
-Output:
-    int: mirrored number
-*/
-int bin_mirror(const int number, const int length) {
-    if (number == 0) {
-        return 0;
-    }
-
-    int binary[length];
-
-    // get binary representation of number (inverted)
-    for (int i = 0; i < length; i++) {
-        binary[i] = (number >> i) & 1;
-    }
-
-    int number_mirrored = 0;
-    for (int i = 0; i < length; i++) {
-        number_mirrored = (number_mirrored << 1) | binary[i];
-    }
-
-    return number_mirrored;
-}
-
-/*
-Shuffles the elements of data using bit-reversal of list index.
-
-Input:
-    carray *data: data to be shuffled
-
-Output:
-    carray: Shuffled data array
-*/
-carray *shuffle_bit_reversed_order(const carray *data) {
-    // calculate bits required to store the largest index
-    // a.e. 0001 -> 1000, filling zeroes are needed for mirroring
-    const int bit_length = (int)log2(data->rows);
-
-    carray *shuffled_data = cmatrix_zeroes(data->rows, 1);
-
-    // mirror every index and put entry to this position
-    for (int i = 0; i < data->rows; i++) {
-        const int i_mirrored = bin_mirror(i, bit_length);
-        shuffled_data->data[i_mirrored] = data->data[i];
-    }
-
-    return shuffled_data;
-}
-
-carray *cmatrix_fft(const carray *data, const COMPLEX_NORM norm) {
+carray *carray_fft(const carray *data, const COMPLEX_NORM norm) {
     if (data == NULL) {
         return NULL;
     }
@@ -759,11 +862,11 @@ carray *cmatrix_fft(const carray *data, const COMPLEX_NORM norm) {
     // check if input length is power of two
     // otherwise perform slow discrete fourier transform
     if (data->rows & (data->cols - 1) != 0) {
-        return cmatrix_dft(data, norm);
+        return carray_dft(data, norm);
     }
 
     // first step of fft: shuffle data
-    carray *data_shuffled = shuffle_bit_reversed_order(data);
+    carray *data_shuffled = carray_shuffle_bit_reversed_order(data);
 
     // second step: iteratively merge transforms
     const int steps = (int) log2(data->rows);
@@ -808,20 +911,21 @@ carray *cmatrix_fft(const carray *data, const COMPLEX_NORM norm) {
     // normalize fft signal with 1/n if norm is forward
     // otherwise return unmodified
     if (norm == COMPLEX_NORM_ORTHO) {
-        cmatrix_muli_val(data_shuffled, 1/sqrt(data->rows));
+        carray_muli_val(data_shuffled, 1/sqrt(data->rows));
     } else if (norm == COMPLEX_NORM_FORWARD) {
-        cmatrix_muli_val(data_shuffled, (double) 1/data->rows);
+        carray_muli_val(data_shuffled, (double) 1/data->rows);
     }
 
     return data_shuffled;
 }
 
-carray *cmatrix_ifft(const carray *data, const COMPLEX_NORM norm) {
+
+carray *carray_ifft(const carray *data, const COMPLEX_NORM norm) {
     if (data == NULL) {
         return NULL;
     }
 
-    carray *data_conj = cmatrix_conj(data);
+    carray *data_conj = carray_conj(data);
     carray *result = NULL;
 
     if (data_conj == NULL) {
@@ -830,26 +934,26 @@ carray *cmatrix_ifft(const carray *data, const COMPLEX_NORM norm) {
 
     switch (norm) {
         case COMPLEX_NORM_ORTHO:
-            result = cmatrix_fft(data_conj, COMPLEX_NORM_ORTHO);
+            result = carray_fft(data_conj, COMPLEX_NORM_ORTHO);
             break;
         case COMPLEX_NORM_FORWARD:
-            result = cmatrix_fft(data_conj, COMPLEX_NORM_BACKWARD);
+            result = carray_fft(data_conj, COMPLEX_NORM_BACKWARD);
             break;
         default:
-            result = cmatrix_fft(data_conj, COMPLEX_NORM_FORWARD);
+            result = carray_fft(data_conj, COMPLEX_NORM_FORWARD);
             break;
     }
 
-    cmatrix_free(data_conj);
+    carray_free(data_conj);
 
     if (result == NULL) {
         return NULL;
     }
 
     // allows complex input on dft/fft
-    carray *result_conj = cmatrix_conj(result);
+    carray *result_conj = carray_conj(result);
 
-    cmatrix_free(result);
+    carray_free(result);
 
     return result_conj;
 }
