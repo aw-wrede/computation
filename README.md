@@ -28,7 +28,7 @@ It offers functions such as the Fourier transform and the inverse.
 
 __Current features:__
 * All functions from marray *(carray_...)*
-* Conjugate of a matrix *(carray_zero)*
+* Conjugate of a matrix *(carray_conj)*
 * Adjoint (conjugate transpose) of a matrix *(carray_adjoint)*
 * DFT matrix *(carray_dft_matrix)*
 * Discrete Fourier Transform *(carray_dft)* and Inverse *(carray_idft)*
