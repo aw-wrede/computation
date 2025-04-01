@@ -80,13 +80,15 @@ Output:
     None, but the partition is applied to the target matrix
 */
 void carray_apply_partition(const carray *dest, const carray *m, const int row, const int col) {
+    const size_t data_size = sizeof(double complex);
+
     for (int i = 0; i < m->rows; i++) {
         const int dest_offset = (i + row) * dest->cols + col;
         const int src_row = i * m->cols;
 
-        for (int j = 0; j < m->cols; j++) {
-            dest->data[dest_offset + j] = m->data[src_row + j];
-        }
+        memcpy(dest->data + dest_offset,
+            m->data + src_row,
+            m->cols * data_size);
     }
 }
 

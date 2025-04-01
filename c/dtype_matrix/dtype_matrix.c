@@ -708,10 +708,9 @@ Output:
     None, but the partition is applied to the target matrix
 */
 void tarray_apply_partition(const tarray *dest, const tarray *m, const int row, const int col) {
-    const assign_func_t assign_func = get_assign_func(dest->dtype);
     const size_t data_size = dtype_data_size(dest->dtype);
 
-    if (assign_func == NULL ||data_size == 0) {
+    if (data_size == 0) {
         return;
     }
 

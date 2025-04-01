@@ -2,8 +2,6 @@
 #define MATRIX_H
 #include <stdbool.h>
 
-#define double double
-
 typedef struct {
     int rows, cols;
     double *data;
