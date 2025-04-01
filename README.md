@@ -3,7 +3,7 @@ This repository contains algorithms in Python and C to calculate basic mathemati
 
 ## C Documentaton
 
-### Marray
+### mArray
 
 __marray__ is a matrix data structure that stores the individual values as a double. \
 It works with the functions in linalg to solve linear systems of equations, for example.
@@ -11,7 +11,7 @@ It works with the functions in linalg to solve linear systems of equations, for 
 __Current features:__
 * Creating zero matrices *(marray_zero)*, unit matrices *(marray_identity)*, copies *(marray_copy)*, transposed matrices *(marray_transposed)*
 * Addition *(marray_add_val, marray_addi_val)*, subtraction, multiplication *(marray_mul_val, marray_muli_val)* of matrices with a single value, both as new matrices and on the first one 
-* Addition, subtraction, multiplication of matrices, both as new matrices and on the first one 
+* Addition, subtraction, multiplication of matrices, both as new matrices and on the first one (immediate)
 * Creating a sub-matrix *(marray_get_partition)*
 * Matrix multiplication *(marray_dot)*
 * Evaluate whether matrices are close to each other *(marray_close, marray_close_all)*
@@ -21,16 +21,16 @@ marray *a = marray_zeroes(4, 4);    // creates a new matrix with zeros and dimen
 marray_addi_val(a, 2.1);            // adds 2.1 to every element of the matrix
 ```
 
-### Carray
+### cArray
 
 __carray__ is a matrix data structure that stores the individual values as a double complex and thus enables complex calculations. \
 It offers functions such as the Fourier transform and the inverse.
 
 __Current features:__
 * All functions from marray *(carray_...)*
-* Conjugate of a matrix *(carray_conj)*
+* Conjugate of a matrix *(carray_zero)*
 * Adjoint (conjugate transpose) of a matrix *(carray_adjoint)*
-* DFT matrix *(carray_dft_matrix)*
+* Creating DFT matrix *(carray_dft_matrix)*
 * Discrete Fourier Transform *(carray_dft)* and Inverse *(carray_idft)*
 * Fast Fourier Transform *(carray_fft)* and Inverse *(carray_ifft)*
 
@@ -39,7 +39,7 @@ carray *signal = marray_zeroes(8, 1);                       // creates a new com
 carray *freq = cmatrix_fft(signal, COMPLEX_NORM_BACKWARD);  // calculates the frequencies of the signal with the Fast Fourier Transform
 ```
 
-### Tarray in dtype_matrix
+### tArray in dtype_matrix
 
 __tarray__ is a matrix data structure that supports different data types, real and complex. \
 _However, it is uncertain to what extent this structure will be further developed in this repository_
@@ -64,11 +64,11 @@ $$
 
 ```math
 \begin{bmatrix} 2 & -1 \\ 1 & 1 \end{bmatrix}
-\cdot
+\times
 \begin{bmatrix} x \\ y \end{bmatrix}
 =
 \begin{bmatrix} 1 \\ 5 \end{bmatrix}
-```
+``` 
 
 ```
 marray *a = matrix_zeroes(2, 1);    // matrix for equations
@@ -77,3 +77,60 @@ marray *b = matrix_zeroes(2, 1);    // matrix for solutions
 marray *x = linalg_solve(a, b);     // values for x=x[0] and y=x[1]
 
 ```
+
+## Mathematical background
+
+### Matrix dot product
+
+The dot product of two matrices is defined as follows for
+$A \in \mathbb{C}^{m,n}, B \in \mathbb{C}^{n,p}$: \
+$A \times B = C \in \mathbb{C}^{n,p}$ with 
+$c_{i,j} = \sum_{k=1}^{m} a_{i,k} \cdot b_{k,j}$
+
+This results in the runtime $O(n^3)$.
+
+If both matrices are quadratic with dimension $n \times n$ and $n$ is even 
+($n = 2k, k \in \mathbb{N}$),
+the matrix multiplication can be simplified as follows 
+*(Strassen algorithm)*:
+```math
+\begin{bmatrix} A_{1,1} & A_{1,2} \\ A_{2,1} & A_{2,2} \end{bmatrix}
+\times
+\begin{bmatrix} B_{1,1} & B_{1,2} \\ B_{2,1} & B_{2,2} \end{bmatrix}
+=
+\begin{bmatrix} C_{1,1} & C_{1,2} \\ A_{2,1} & C_{2,2} \end{bmatrix}
+```
+
+$$
+\begin{align}
+C_{1,1} &= A_{1,1} \times B_{1,1} + A_{1,2} \times B_{2,1} \\
+C_{1,2} &= A_{1,1} \times B_{1,2} + A_{1,2} \times B_{2,2} \\
+C_{2,1} &= A_{2,1} \times B_{1,1} + A_{2,2} \times B_{2,1} \\
+C_{2,2} &= A_{2,1} \times B_{1,2} + A_{2,2} \times B_{2,2}
+\end{align}
+$$
+
+However, this still leads to the following runtime:
+$T(n) = 8 \cdot T(n/2) + O(n^2) \Rightarrow T(n) = O(n^3)$
+
+One multiplication can be saved by clever algebraic transformation:
+
+$$
+\begin{align}
+M_1 &= ( A_{1,1} + A_{2,2} ) \times ( B_{1,1} + B_{2,2} ) \\
+M_2 &= ( A_{2,1} + A_{2,2} ) \times B_{1,1} \\
+M_3 &= A_{1,1} \times ( B_{1,2} - B_{2,2} ) \\
+M_4 &= A_{2,2} \times ( B_{2,1} - B_{1,1} ) \\
+M_5 &= ( A_{1,1} + A_{1,2} ) \times B_{2,2} \\
+M_6 &= ( A_{2,1} - A_{1,1} ) \times ( B_{1,1} + B_{1,2} ) \\
+M_7 &= ( A_{1,2} - A_{2,2} ) \times ( B_{2,1} + B_{2,2} )
+\end{align}
+$$
+
+This leads to the runtime
+$T(n) = 7 \cdot T(n/2) + O(n^2) \Rightarrow T(n) = O(n^{\log_2 7}) \approx O(n^{2.81})$.
+
+This is not the fastest algorithm. The Coppersmith-Winograd algorithm has the runtime
+$O(n^{2.376})$.
+
+*(It's planned to implement better algorithms, also for non-square matrices.)*
