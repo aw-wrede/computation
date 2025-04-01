@@ -2,7 +2,7 @@
 #define LINALG_H
 
 #include <stdbool.h>
-#include "../matrix/matrix.h"
+#include "../marray/marray.h"
 
 /*
 Prints the given linear equation system to console

@@ -78,7 +78,7 @@ bool linalg_gaussian_elimination(const marray *a, const marray *b) {
 }
 
 marray *linalg_back_substitution(const marray *a, const marray *b) {
-    marray *x = matrix_zeroes(a->cols, 1);
+    marray *x = marray_zeroes(a->cols, 1);
 
     for (int i = a->cols - 1; i >= 0; i--) {
         const double pivot = a->data[i * a->cols + i];
@@ -94,8 +94,8 @@ marray *linalg_back_substitution(const marray *a, const marray *b) {
         marray *a_i = NULL;
         marray *x_i = NULL;
 
-        matrix_get_partition(&a_i, a, i, i + 1, i + 1, a->cols);
-        matrix_get_partition(&x_i, x, i + 1, x->rows, 0, 1);
+        marray_get_partition(&a_i, a, i, i + 1, i + 1, a->cols);
+        marray_get_partition(&x_i, x, i + 1, x->rows, 0, 1);
 
         // check for errors
         if (a_i == NULL || x_i == NULL) {
@@ -103,7 +103,7 @@ marray *linalg_back_substitution(const marray *a, const marray *b) {
         }
 
         // dot = a[i, i+1:] * x[i+1:]
-        marray *dot = matrix_dot(a_i, x_i);
+        marray *dot = marray_dot(a_i, x_i);
 
         // check for errors
         if (dot == NULL) {
@@ -117,9 +117,9 @@ marray *linalg_back_substitution(const marray *a, const marray *b) {
         x->data[i] = result;
 
         // free temp matrices
-        matrix_free(a_i);
-        matrix_free(x_i);
-        matrix_free(dot);
+        marray_free(a_i);
+        marray_free(x_i);
+        marray_free(dot);
     }
 
     return x;
@@ -137,28 +137,28 @@ marray *linalg_solve(const marray *a, const marray *b) {
     }
 
     // create copies of a and b because they will be modified
-    marray *a_copy = matrix_copy(a);
-    marray *b_copy = matrix_copy(b);
+    marray *a_copy = marray_copy(a);
+    marray *b_copy = marray_copy(b);
 
     // abort if copies could not be created
     if (a_copy == NULL || b_copy == NULL) {
-        matrix_free(a_copy);
-        matrix_free(b_copy);
+        marray_free(a_copy);
+        marray_free(b_copy);
         return NULL;
     }
 
     // abort if gauss was not successful
     if (!linalg_gaussian_elimination(a_copy, b_copy)) {
-        matrix_free(a_copy);
-        matrix_free(b_copy);
+        marray_free(a_copy);
+        marray_free(b_copy);
         return NULL;
     }
 
     marray *x = linalg_back_substitution(a_copy, b_copy);
 
     // free temp matrices
-    matrix_free(a_copy);
-    matrix_free(b_copy);
+    marray_free(a_copy);
+    marray_free(b_copy);
 
     return x;
 }
