@@ -8,6 +8,23 @@
 
 /** PRIVATE FUNCTIONS **/
 
+/*
+Frees many matrices at once
+
+Input:
+    tarray *m[]: list of all matrices to free
+    int n: amount of elements in the array
+
+Output:
+    None
+*/
+void tarray_free_many(tarray *m[], const int n) {
+    for (int i = 0; i < n; i++) {
+        tarray_free(m[i]);
+    }
+}
+
+
 /** matrix_print sub functions based on tarray dtype **/
 
 typedef void (*print_func_t)(const void *data, int index, int precision);
@@ -782,26 +799,12 @@ bool tarray_dot_quadratic(const tarray *result, const tarray *a, const tarray *b
     // check for successful matrix operations
     if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
         m6_b == NULL || m7_a == NULL || m7_b == NULL) {
-        tarray_free(a11);
-        tarray_free(a12);
-        tarray_free(a21);
-        tarray_free(a22);
+        tarray *arrays_1[] = {
+            a11, a12, a21, a22, // 4
+            b11, b12, b21, b22, // 4
+            m1_a, m1_b, m2_a, m3_b, m4_b, m5_a, m6_a, m6_b, m7_a, m7_b}; // 10
 
-        tarray_free(b11);
-        tarray_free(b12);
-        tarray_free(b21);
-        tarray_free(b22);
-
-        tarray_free(m1_a);
-        tarray_free(m1_b);
-        tarray_free(m2_a);
-        tarray_free(m3_b);
-        tarray_free(m4_b);
-        tarray_free(m5_a);
-        tarray_free(m6_a);
-        tarray_free(m6_b);
-        tarray_free(m7_a);
-        tarray_free(m7_b);
+        tarray_free_many(arrays_1, 18);
 
         return 0;
     }
@@ -815,36 +818,18 @@ bool tarray_dot_quadratic(const tarray *result, const tarray *a, const tarray *b
     tarray *m7 = tarray_dot(m7_a, m7_b);
 
     // free up memory that is no longer required
-    tarray_free(a11);
-    tarray_free(a12);
-    tarray_free(a21);
-    tarray_free(a22);
+    tarray *arrays_1[] = {
+        a11, a12, a21, a22, // 4
+        b11, b12, b21, b22, // 4
+        m1_a, m1_b, m2_a, m3_b, m4_b, m5_a, m6_a, m6_b, m7_a, m7_b}; // 10
 
-    tarray_free(b11);
-    tarray_free(b12);
-    tarray_free(b21);
-    tarray_free(b22);
-
-    tarray_free(m1_a);
-    tarray_free(m1_b);
-    tarray_free(m2_a);
-    tarray_free(m3_b);
-    tarray_free(m4_b);
-    tarray_free(m5_a);
-    tarray_free(m6_a);
-    tarray_free(m6_b);
-    tarray_free(m7_a);
-    tarray_free(m7_b);
+    tarray_free_many(arrays_1, 18);
 
     // check for successful matrix operations
     if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
-        tarray_free(m1);
-        tarray_free(m2);
-        tarray_free(m3);
-        tarray_free(m4);
-        tarray_free(m5);
-        tarray_free(m6);
-        tarray_free(m7);
+        tarray *arrays_2[] = {m1, m2, m3, m4, m5, m6, m7};
+        tarray_free_many(arrays_2, 7);
+
         return 0;
     }
 
@@ -862,29 +847,21 @@ bool tarray_dot_quadratic(const tarray *result, const tarray *a, const tarray *b
     tarray_addi(c22, m6);
 
     // free up memory that is no longer required
-    tarray_free(m1);
-    tarray_free(m2);
-    tarray_free(m3);
-    tarray_free(m4);
-    tarray_free(m5);
-    tarray_free(m6);
-    tarray_free(m7);
+    tarray *arrays_2[] = {m1, m2, m3, m4, m5, m6, m7};
+    tarray_free_many(arrays_2, 7);
 
     // check for successful matrix operations
     if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
-        tarray_free(c11);
-        tarray_free(c12);
-        tarray_free(c21);
-        tarray_free(c22);
+        tarray *arrays_3[] = {c11, c12, c21, c22};
+        tarray_free_many(arrays_3, 4);
+
         return 0;
     }
 
     tarray_from_partitions(result, c11, c12, c21, c22);
 
-    tarray_free(c11);
-    tarray_free(c12);
-    tarray_free(c21);
-    tarray_free(c22);
+    tarray *arrays_3[] = {c11, c12, c21, c22};
+    tarray_free_many(arrays_3, 4);
 
     return 1;
 }

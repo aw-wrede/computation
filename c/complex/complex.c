@@ -8,6 +8,23 @@
 /** PRIVATE FUNCTIONS **/
 
 /*
+Frees many matrices at once
+
+Input:
+    carray *m[]: list of all matrices to free
+    int n: amount of elements in the array
+
+Output:
+    None
+*/
+void carray_free_many(carray *m[], const int n) {
+    for (int i = 0; i < n; i++) {
+        carray_free(m[i]);
+    }
+}
+
+
+/*
 Performs the dot multiplication with the general method
 
 Input:
@@ -150,26 +167,12 @@ int carray_dot_quadratic(const carray *result, const carray *a, const carray *b)
     // check for successful matrix operations
     if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
         m6_b == NULL || m7_a == NULL || m7_b == NULL) {
-        carray_free(a11);
-        carray_free(a12);
-        carray_free(a21);
-        carray_free(a22);
+        carray *arrays_1[] = {
+            a11, a12, a21, a22, // 4
+            b11, b12, b21, b22, // 4
+            m1_a, m1_b, m2_a, m3_b, m4_b, m5_a, m6_a, m6_b, m7_a, m7_b}; // 10
 
-        carray_free(b11);
-        carray_free(b12);
-        carray_free(b21);
-        carray_free(b22);
-
-        carray_free(m1_a);
-        carray_free(m1_b);
-        carray_free(m2_a);
-        carray_free(m3_b);
-        carray_free(m4_b);
-        carray_free(m5_a);
-        carray_free(m6_a);
-        carray_free(m6_b);
-        carray_free(m7_a);
-        carray_free(m7_b);
+        carray_free_many(arrays_1, 18);
 
         return 0;
     }
@@ -183,36 +186,18 @@ int carray_dot_quadratic(const carray *result, const carray *a, const carray *b)
     carray *m7 = carray_dot(m7_a, m7_b);
 
     // free up memory that is no longer required
-    carray_free(a11);
-    carray_free(a12);
-    carray_free(a21);
-    carray_free(a22);
+    carray *arrays_1[] = {
+        a11, a12, a21, a22, // 4
+        b11, b12, b21, b22, // 4
+        m1_a, m1_b, m2_a, m3_b, m4_b, m5_a, m6_a, m6_b, m7_a, m7_b}; // 10
 
-    carray_free(b11);
-    carray_free(b12);
-    carray_free(b21);
-    carray_free(b22);
-
-    carray_free(m1_a);
-    carray_free(m1_b);
-    carray_free(m2_a);
-    carray_free(m3_b);
-    carray_free(m4_b);
-    carray_free(m5_a);
-    carray_free(m6_a);
-    carray_free(m6_b);
-    carray_free(m7_a);
-    carray_free(m7_b);
+    carray_free_many(arrays_1, 18);
 
     // check for successful matrix operations
     if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
-        carray_free(m1);
-        carray_free(m2);
-        carray_free(m3);
-        carray_free(m4);
-        carray_free(m5);
-        carray_free(m6);
-        carray_free(m7);
+        carray *arrays_2[] = {m1, m2, m3, m4, m5, m6, m7};
+        carray_free_many(arrays_2, 7);
+
         return 0;
     }
 
@@ -230,29 +215,21 @@ int carray_dot_quadratic(const carray *result, const carray *a, const carray *b)
     carray_addi(c22, m6);
 
     // free up memory that is no longer required
-    carray_free(m1);
-    carray_free(m2);
-    carray_free(m3);
-    carray_free(m4);
-    carray_free(m5);
-    carray_free(m6);
-    carray_free(m7);
+    carray *arrays_2[] = {m1, m2, m3, m4, m5, m6, m7};
+    carray_free_many(arrays_2, 7);
 
     // check for successful matrix operations
     if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
-        carray_free(c11);
-        carray_free(c12);
-        carray_free(c21);
-        carray_free(c22);
+        carray *arrays_3[] = {c11, c12, c21, c22};
+        carray_free_many(arrays_3, 4);
+
         return 0;
     }
 
     carray_from_partitions(result, c11, c12, c21, c22);
 
-    carray_free(c11);
-    carray_free(c12);
-    carray_free(c21);
-    carray_free(c22);
+    carray *arrays_3[] = {c11, c12, c21, c22};
+    carray_free_many(arrays_3, 4);
 
     return 1;
 }

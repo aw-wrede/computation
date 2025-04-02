@@ -8,6 +8,23 @@
 /** PRIVATE FUNCTIONS **/
 
 /*
+Frees many matrices at once
+
+Input:
+    marray *m[]: list of all matrices to free
+    int n: amount of elements in the array
+
+Output:
+    None
+*/
+void marray_free_many(marray *m[], const int n) {
+    for (int i = 0; i < n; i++) {
+        marray_free(m[i]);
+    }
+}
+
+
+/*
 Performs the dot multiplication with the general method
 
 Input:
@@ -150,26 +167,12 @@ int marray_dot_quadratic(const marray *result, const marray *a, const marray *b)
     // check for successful matrix operations
     if (m1_a == NULL || m1_b == NULL || m2_a == NULL || m3_b == NULL || m4_b == NULL || m5_a == NULL || m6_a == NULL ||
         m6_b == NULL || m7_a == NULL || m7_b == NULL) {
-        marray_free(a11);
-        marray_free(a12);
-        marray_free(a21);
-        marray_free(a22);
+        marray *arrays_1[] = {
+            a11, a12, a21, a22, // 4
+            b11, b12, b21, b22, // 4
+            m1_a, m1_b, m2_a, m3_b, m4_b, m5_a, m6_a, m6_b, m7_a, m7_b}; // 10
 
-        marray_free(b11);
-        marray_free(b12);
-        marray_free(b21);
-        marray_free(b22);
-
-        marray_free(m1_a);
-        marray_free(m1_b);
-        marray_free(m2_a);
-        marray_free(m3_b);
-        marray_free(m4_b);
-        marray_free(m5_a);
-        marray_free(m6_a);
-        marray_free(m6_b);
-        marray_free(m7_a);
-        marray_free(m7_b);
+        marray_free_many(arrays_1, 18);
 
         return 0;
     }
@@ -183,36 +186,18 @@ int marray_dot_quadratic(const marray *result, const marray *a, const marray *b)
     marray *m7 = marray_dot(m7_a, m7_b);
 
     // free up memory that is no longer required
-    marray_free(a11);
-    marray_free(a12);
-    marray_free(a21);
-    marray_free(a22);
+    marray *arrays_1[] = {
+        a11, a12, a21, a22, // 4
+        b11, b12, b21, b22, // 4
+        m1_a, m1_b, m2_a, m3_b, m4_b, m5_a, m6_a, m6_b, m7_a, m7_b}; // 10
 
-    marray_free(b11);
-    marray_free(b12);
-    marray_free(b21);
-    marray_free(b22);
-
-    marray_free(m1_a);
-    marray_free(m1_b);
-    marray_free(m2_a);
-    marray_free(m3_b);
-    marray_free(m4_b);
-    marray_free(m5_a);
-    marray_free(m6_a);
-    marray_free(m6_b);
-    marray_free(m7_a);
-    marray_free(m7_b);
+    marray_free_many(arrays_1, 18);
 
     // check for successful matrix operations
     if (m1 == NULL || m2 == NULL || m3 == NULL || m4 == NULL || m5 == NULL || m6 == NULL || m7 == NULL) {
-        marray_free(m1);
-        marray_free(m2);
-        marray_free(m3);
-        marray_free(m4);
-        marray_free(m5);
-        marray_free(m6);
-        marray_free(m7);
+        marray *arrays_2[] = {m1, m2, m3, m4, m5, m6, m7};
+        marray_free_many(arrays_2, 7);
+
         return 0;
     }
 
@@ -230,29 +215,21 @@ int marray_dot_quadratic(const marray *result, const marray *a, const marray *b)
     marray_addi(c22, m6);
 
     // free up memory that is no longer required
-    marray_free(m1);
-    marray_free(m2);
-    marray_free(m3);
-    marray_free(m4);
-    marray_free(m5);
-    marray_free(m6);
-    marray_free(m7);
+    marray *arrays_2[] = {m1, m2, m3, m4, m5, m6, m7};
+    marray_free_many(arrays_2, 7);
 
     // check for successful matrix operations
     if (c11 == NULL || c12 == NULL || c21 == NULL || c22 == NULL) {
-        marray_free(c11);
-        marray_free(c12);
-        marray_free(c21);
-        marray_free(c22);
+        marray *arrays_3[] = {c11, c12, c21, c22};
+        marray_free_many(arrays_3, 4);
+
         return 0;
     }
 
     marray_from_partitions(result, c11, c12, c21, c22);
 
-    marray_free(c11);
-    marray_free(c12);
-    marray_free(c21);
-    marray_free(c22);
+    marray *arrays_3[] = {c11, c12, c21, c22};
+    marray_free_many(arrays_3, 4);
 
     return 1;
 }
