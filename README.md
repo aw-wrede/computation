@@ -176,7 +176,6 @@ carray *dft_matrix = carray_dft_matrix(n, COMPLEX_NORM_ORTHO); // creates unitar
 # Python
 import complex
 
-
 n = 4 # dimension
 f4 = complex.dft_matrix(n, norm='ortho') # creates unitary dft matrix
 ```
@@ -190,13 +189,13 @@ Frequency space to Local space: ${\Omega_n}^{-1} \times \hat{z} = z$
 
 The real parts of the transformed signal represent the cosine oscillations and the imaginary parts the sine oscillations.
 
-The following symmetry exists for real signals: \
-$\Re(\hat{z}_k) = \Re(\hat{z}_{n-k})$
-for
-$1 \leq k \leq \lfloor\frac{n}{2}\rfloor$ \
-$\Im(\hat{z}_k) = - \Im(\hat{z}_{n-k})$
-for
-$1 \leq k \leq \lfloor\frac{n}{2}\rfloor$
+The following symmetry exists for real signals:
+```math
+\begin{align}
+	Re(\hat{z}_k) = Re(\hat{z}_{n-k}) \text{ for } 1 \leq k \leq \lfloor\frac{n}{2}\rfloor \\
+	Im(\hat{z}_k) = - Im(\hat{z}_{n-k}) \text{ for } 1 \leq k \leq \lfloor\frac{n}{2}\rfloor
+\end{align}
+```
 
 This leads to the conclusion that no distinction can be made between frequencies $k$ and $n-k$ and therefore the highest analyzable frequency is in the middle of the frequency spectrum.
 
