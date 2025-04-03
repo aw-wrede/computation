@@ -79,8 +79,10 @@ $$
 ``` 
 
 ```C
-marray *a = matrix_zeroes(2, 1);    // matrix for equations
+marray *a = matrix_zeroes(2, 2);    // matrix for equations
 marray *b = matrix_zeroes(2, 1);    // matrix for solutions
+
+// add values to the matrices
 
 marray *x = linalg_solve(a, b);     // values for x=x[0] and y=x[1]
 
