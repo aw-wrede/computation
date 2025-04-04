@@ -15,10 +15,16 @@ __Current features:__
 * Creating a sub-matrix *(marray_get_partition)*
 * Matrix multiplication *(marray_dot)*
 * Evaluate whether matrices are close to each other *(marray_close, marray_close_all)*
+* Save and load a matrix to/from a file *(marray_from_file, marray_to_file)*
 
 ```C
 marray *a = marray_zeroes(4, 4);    // creates a new matrix with zeros and dimension 4x4 (rows x columns)
 marray_addi_val(a, 2.1);            // adds 2.1 to every element of the matrix
+```
+
+```C
+marray *a = marray_from_file("matrix.bin"); 	// loads the matrix from the file
+bool result = marray_to_file(a, "matrix.bin"); 	// saves the matrix to the file
 ```
 
 ### cArray

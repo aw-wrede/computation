@@ -351,6 +351,56 @@ marray *marray_transposed(const marray *m) {
 }
 
 
+/** matrix file functions **/
+
+marray *marray_from_file(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+
+    if (file == NULL) {
+        return NULL;
+    }
+
+    int dimensions[2];
+
+    // read matrix size data
+    if (fread(dimensions, sizeof(int), 2, file) != 2) {
+        fclose(file);
+        return NULL;
+    }
+
+    marray *m = marray_zeroes(dimensions[0], dimensions[1]);
+
+    const size_t data_size = m->rows * m->cols;
+    if (fread(m->data, sizeof(double), data_size, file) != data_size) {
+        fclose(file);
+        marray_free(m);
+        return NULL;
+    }
+
+    fclose(file);
+
+    return m;
+}
+
+
+bool marray_to_file(const marray *m, const char *filename) {
+    FILE *file = fopen(filename, "wb");
+
+    if (file == NULL) {
+        return false;
+    }
+
+    fwrite(&m->rows, sizeof(int), 1, file);
+    fwrite(&m->cols, sizeof(int), 1, file);
+
+    fwrite(m->data, sizeof(double), m->rows * m->cols, file);
+
+    fclose(file);
+
+    return true;
+}
+
+
 /** matrix calculation functions **/
 
 void marray_addi_val(const marray *a, const double b) {

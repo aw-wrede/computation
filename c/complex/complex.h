@@ -116,6 +116,30 @@ Output:
 carray *carray_adjoint(const carray *m);
 
 /*
+Creates a matrix from data saved in a file
+
+Input:
+    char *filename: file path
+
+Output:
+    carray*: pointer to the matrix containing the data in the file
+*/
+carray *carray_from_file(const char *filename);
+
+/*
+Saves the matrix into a file
+
+Input:
+    carray *m: matrix to save
+    char *filename: file path
+
+Output:
+    bool: result of save operation
+*/
+bool carray_to_file(const carray *m, const char *filename);
+
+
+/*
 Adds the value b to the complex matrix a
 
 Input:

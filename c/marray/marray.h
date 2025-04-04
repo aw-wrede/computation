@@ -87,6 +87,30 @@ Output:
 marray *marray_transposed(const marray *m);
 
 /*
+Creates a matrix from data saved in a file
+
+Input:
+    char *filename: file path
+
+Output:
+    marray*: pointer to the matrix containing the data in the file
+*/
+marray *marray_from_file(const char *filename);
+
+/*
+Saves the matrix into a file
+
+Input:
+    marray *m: matrix to save
+    char *filename: file path
+
+Output:
+    bool: result of save operation
+*/
+bool marray_to_file(const marray *m, const char *filename);
+
+
+/*
 Adds the value b to the matrix a
 
 Input:

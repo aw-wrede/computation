@@ -1,3 +1,4 @@
+import os
 import unittest
 import numpy as np
 
@@ -27,6 +28,18 @@ class MatrixTest(unittest.TestCase):
         self.assertTrue(np.allclose(mtrx.close(a1, a2, 1e-05, 1e-08), np.isclose(a1, a2, 1e-05, 1e-08)))
         with self.assertRaises(ValueError):
             mtrx.close(self.a, self.b)
+
+    def test_file(self):
+        a = np.random.random((16, 16))
+
+        mtrx.save(a, "matrix_a.npy")
+        self.assertTrue(os.path.isfile("matrix_a.npy"))
+
+        a_loaded = mtrx.from_file("matrix_a.npy")
+        os.remove("matrix_a.npy")
+
+        self.assertTrue(np.allclose(a_loaded, a))
+
 
 if __name__ == '__main__':
     unittest.main()

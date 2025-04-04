@@ -1068,6 +1068,58 @@ tarray *tarray_transposed(const tarray *m) {
 }
 
 
+/** matrix file functions **/
+
+tarray *tarray_from_file(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+
+    if (file == NULL) {
+        return NULL;
+    }
+
+    int dimensions[2];
+    MATRIX_DTYPE dtype;
+
+    // read matrix size data
+    if (fread(dimensions, sizeof(int), 2, file) != 2 || fread(&dtype, sizeof(MATRIX_DTYPE), 1, file) != 1) {
+        fclose(file);
+        return NULL;
+    }
+
+    tarray *m = tarray_zeroes(dimensions[0], dimensions[1], dtype);
+
+    const size_t data_size = m->rows * m->cols;
+    if (fread(m->data, dtype_data_size(dtype), data_size, file) != data_size) {
+        fclose(file);
+        tarray_free(m);
+        return NULL;
+    }
+
+    fclose(file);
+
+    return m;
+}
+
+
+bool tarray_to_file(const tarray *m, const char *filename) {
+    FILE *file = fopen(filename, "wb");
+
+    if (file == NULL) {
+        return false;
+    }
+
+    fwrite(&m->rows, sizeof(int), 1, file);
+    fwrite(&m->cols, sizeof(int), 1, file);
+    fwrite(&m->dtype, sizeof(MATRIX_DTYPE), 1, file);
+
+    fwrite(m->data, dtype_data_size(m->dtype), m->rows * m->cols, file);
+
+    fclose(file);
+
+    return true;
+}
+
+
 /** matrix calculation functions **/
 
 void tarray_addi_val(const tarray *a, const double b) {

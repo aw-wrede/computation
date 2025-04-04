@@ -101,6 +101,30 @@ Output:
 tarray *tarray_transposed(const tarray *m);
 
 /*
+Creates a matrix from data saved in a file
+
+Input:
+    char *filename: file path
+
+Output:
+    tarray*: pointer to the matrix containing the data in the file
+*/
+tarray *tarray_from_file(const char *filename);
+
+
+/*
+Saves the matrix into a file
+
+Input:
+    tarray *m: matrix to save
+    char *filename: file path
+
+Output:
+    bool: result of save operation
+*/
+bool tarray_to_file(const tarray *m, const char *filename);
+
+/*
 Adds the value b to the matrix a
 
 Input:

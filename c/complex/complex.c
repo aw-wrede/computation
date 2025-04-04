@@ -454,6 +454,56 @@ carray *carray_adjoint(const carray *m) {
 }
 
 
+/** matrix file functions **/
+
+carray *carray_from_file(const char *filename) {
+    FILE *file = fopen(filename, "rb");
+
+    if (file == NULL) {
+        return NULL;
+    }
+
+    int dimensions[2];
+
+    // read matrix size data
+    if (fread(dimensions, sizeof(int), 2, file) != 2) {
+        fclose(file);
+        return NULL;
+    }
+
+    carray *m = carray_zeroes(dimensions[0], dimensions[1]);
+
+    const size_t data_size = m->rows * m->cols;
+    if (fread(m->data, sizeof(double complex), data_size, file) != data_size) {
+        fclose(file);
+        carray_free(m);
+        return NULL;
+    }
+
+    fclose(file);
+
+    return m;
+}
+
+
+bool carray_to_file(const carray *m, const char *filename) {
+    FILE *file = fopen(filename, "wb");
+
+    if (file == NULL) {
+        return false;
+    }
+
+    fwrite(&m->rows, sizeof(int), 1, file);
+    fwrite(&m->cols, sizeof(int), 1, file);
+
+    fwrite(m->data, sizeof(double complex), m->rows * m->cols, file);
+
+    fclose(file);
+
+    return true;
+}
+
+
 /** matrix calculation functions **/
 
 void carray_addi_val(const carray *a, const double complex b) {
