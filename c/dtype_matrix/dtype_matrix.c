@@ -809,13 +809,21 @@ bool tarray_dot_quadratic(const tarray *result, const tarray *a, const tarray *b
         return 0;
     }
 
-    tarray *m1 = tarray_dot(m1_a, m1_b);
-    tarray *m2 = tarray_dot(m2_a, b11);
-    tarray *m3 = tarray_dot(a11, m3_b);
-    tarray *m4 = tarray_dot(a22, m4_b);
-    tarray *m5 = tarray_dot(m5_a, b22);
-    tarray *m6 = tarray_dot(m6_a, m6_b);
-    tarray *m7 = tarray_dot(m7_a, m7_b);
+    tarray *m1 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+    tarray *m2 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+    tarray *m3 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+    tarray *m4 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+    tarray *m5 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+    tarray *m6 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+    tarray *m7 = tarray_zeroes(a11->rows, a11->cols, a11->dtype);
+
+    tarray_dot_general(m1, m1_a, m1_b);
+    tarray_dot_general(m2, m2_a, b11);
+    tarray_dot_general(m3, a11, m3_b);
+    tarray_dot_general(m4, a22, m4_b);
+    tarray_dot_general(m5, m5_a, b22);
+    tarray_dot_general(m6, m6_a, m6_b);
+    tarray_dot_general(m7, m7_a, m7_b);
 
     // free up memory that is no longer required
     tarray *arrays_1[] = {

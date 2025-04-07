@@ -68,13 +68,13 @@ def dot(a:np.ndarray ,b:np.ndarray) -> np.ndarray:
         a11, a12, a21, a22 = get_partitions(a)
         b11, b12, b21, b22 = get_partitions(b)
 
-        m1 = dot(a11 + a22 , b11 + b22)
-        m2 = dot(a21 + a22,  b11)
-        m3 = dot(a11,        b12 - b22)
-        m4 = dot(a22,        b21 - b11)
-        m5 = dot(a11 + a12,  b22)
-        m6 = dot(a21 - a11,  b11 + b12)
-        m7 = dot(a12 - a22,  b21 + b22)
+        m1 = dot_general(a11 + a22 , b11 + b22)
+        m2 = dot_general(a21 + a22,  b11)
+        m3 = dot_general(a11,        b12 - b22)
+        m4 = dot_general(a22,        b21 - b11)
+        m5 = dot_general(a11 + a12,  b22)
+        m6 = dot_general(a21 - a11,  b11 + b12)
+        m7 = dot_general(a12 - a22,  b21 + b22)
 
         c11 = m1 + m4 - m5 + m7
         c12 = m3 + m5

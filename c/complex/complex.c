@@ -177,13 +177,21 @@ int carray_dot_quadratic(const carray *result, const carray *a, const carray *b)
         return 0;
     }
 
-    carray *m1 = carray_dot(m1_a, m1_b);
-    carray *m2 = carray_dot(m2_a, b11);
-    carray *m3 = carray_dot(a11, m3_b);
-    carray *m4 = carray_dot(a22, m4_b);
-    carray *m5 = carray_dot(m5_a, b22);
-    carray *m6 = carray_dot(m6_a, m6_b);
-    carray *m7 = carray_dot(m7_a, m7_b);
+    carray *m1 = carray_zeroes(a11->rows, a11->cols);
+    carray *m2 = carray_zeroes(a11->rows, a11->cols);
+    carray *m3 = carray_zeroes(a11->rows, a11->cols);
+    carray *m4 = carray_zeroes(a11->rows, a11->cols);
+    carray *m5 = carray_zeroes(a11->rows, a11->cols);
+    carray *m6 = carray_zeroes(a11->rows, a11->cols);
+    carray *m7 = carray_zeroes(a11->rows, a11->cols);
+
+    carray_dot_general(m1, m1_a, m1_b);
+    carray_dot_general(m2, m2_a, b11);
+    carray_dot_general(m3, a11, m3_b);
+    carray_dot_general(m4, a22, m4_b);
+    carray_dot_general(m5, m5_a, b22);
+    carray_dot_general(m6, m6_a, m6_b);
+    carray_dot_general(m7, m7_a, m7_b);
 
     // free up memory that is no longer required
     carray *arrays_1[] = {

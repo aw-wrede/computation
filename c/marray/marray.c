@@ -145,7 +145,7 @@ Output:
     None, but the result is stored in *result
 */
 int marray_dot_quadratic(const marray *result, const marray *a, const marray *b) {
-    //TODO Think about better solution to free matrices if errors occur
+    // TODO Improve (dot general is way faster)
 
     marray *a11 = NULL, *a12 = NULL, *a21 = NULL, *a22 = NULL;
     marray *b11 = NULL, *b12 = NULL, *b21 = NULL, *b22 = NULL;
@@ -177,13 +177,21 @@ int marray_dot_quadratic(const marray *result, const marray *a, const marray *b)
         return 0;
     }
 
-    marray *m1 = marray_dot(m1_a, m1_b);
-    marray *m2 = marray_dot(m2_a, b11);
-    marray *m3 = marray_dot(a11, m3_b);
-    marray *m4 = marray_dot(a22, m4_b);
-    marray *m5 = marray_dot(m5_a, b22);
-    marray *m6 = marray_dot(m6_a, m6_b);
-    marray *m7 = marray_dot(m7_a, m7_b);
+    marray *m1 = marray_zeroes(a11->rows, a11->cols);
+    marray *m2 = marray_zeroes(a11->rows, a11->cols);
+    marray *m3 = marray_zeroes(a11->rows, a11->cols);
+    marray *m4 = marray_zeroes(a11->rows, a11->cols);
+    marray *m5 = marray_zeroes(a11->rows, a11->cols);
+    marray *m6 = marray_zeroes(a11->rows, a11->cols);
+    marray *m7 = marray_zeroes(a11->rows, a11->cols);
+
+    marray_dot_general(m1, m1_a, m1_b);
+    marray_dot_general(m2, m2_a, b11);
+    marray_dot_general(m3, a11, m3_b);
+    marray_dot_general(m4, a22, m4_b);
+    marray_dot_general(m5, m5_a, b22);
+    marray_dot_general(m6, m6_a, m6_b);
+    marray_dot_general(m7, m7_a, m7_b);
 
     // free up memory that is no longer required
     marray *arrays_1[] = {
