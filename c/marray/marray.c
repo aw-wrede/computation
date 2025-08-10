@@ -535,6 +535,38 @@ marray *marray_dot(const marray *a, const marray *b) {
 }
 
 
+/** matrix sum, exp functions **/
+
+double marray_sum(const marray *m) {
+    double sum = 0.0;
+
+    const int elems = m->rows * m->cols;
+
+    for (int i = 0; i < elems; i++) {
+        sum += m->data[i];
+    }
+
+    return sum;
+}
+
+
+marray *marray_exp(const marray *m) {
+    marray *result = marray_zeroes(m->rows, m->cols);
+
+    if (result == NULL) {
+        return NULL;
+    }
+
+    const int elems = m->rows * m->cols;
+
+    for (int i = 0; i < elems; i++) {
+        result->data[i] = exp(m->data[i]);
+    }
+
+    return result;
+}
+
+
 /** matrix close functions **/
 
 marray *marray_close(const marray *a, const marray *b, const double rtol, const double atol) {
