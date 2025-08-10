@@ -210,6 +210,29 @@ Output:
 marray *marray_dot(const marray *a, const marray *b);
 
 /*
+Calculates the sum of the given matrix
+
+Input:
+    marray *a: a pointer to a matrix
+
+Output:
+    double: The sum of every matrix element
+
+ */
+double marray_sum(const marray *m);
+
+/*
+Calculates the element‑wise exponential of a matrix
+
+Input:
+    marray *m: a pointer to a matrix
+
+Output:
+    marray*: pointer to a new matrix  where each entry is the value of exp(original entry)
+ */
+marray *marray_exp(const marray *m);
+
+/*
 Checks whether the individual elements of both matrices are close to each other and returns the result per element
 
 Input:
